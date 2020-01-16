@@ -1,9 +1,13 @@
 package com.toddle.RecorderLib;
 
 import android.os.AsyncTask;
+import android.os.Build;
 import android.util.Log;
 
+import androidx.annotation.RequiresApi;
+
 import com.toddle.Recorder.EncoderListener;
+import com.toddle.Recorder.Recorder;
 import com.toddle.Sketch.DrawView;
 
 import java.io.IOException;
@@ -21,6 +25,8 @@ public class VideoRecorder {
 
     private DrawView drawView;
 
+    private Recorder.RecorderListener listener;
+
     private EncoderListener encoderListener;
 
     ExecutorService executorService = Executors.newFixedThreadPool(1);
@@ -29,16 +35,17 @@ public class VideoRecorder {
 
     VideoEncoder videoEncoder;
 
-    public VideoRecorder(EncoderListener paramEncoderListener, DrawView paramDrawView) {
+    public VideoRecorder(EncoderListener paramEncoderListener, Recorder.RecorderListener listner) {
         this.encoderListener = paramEncoderListener;
-        this.drawView = paramDrawView;
+        this.listener = listner;
     }
 
     int frameNum = 0;
 
+    @RequiresApi(api = Build.VERSION_CODES.JELLY_BEAN_MR2)
     public void startRecording() throws IOException {
         isRecording = true;
-        this.videoEncoder = new VideoEncoder(this.encoderListener, this.drawView);
+        this.videoEncoder = new VideoEncoder(this.encoderListener, this.listener);
 
 
 //        new Thread(new Runnable() {
@@ -98,8 +105,10 @@ public class VideoRecorder {
         this.executorService.execute(new Runnable() {
             public void run() {
                 try {
-                    videoEncoder.drainEncoder(true);
-                    videoEncoder.releaseEncoder();
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR2) {
+                        videoEncoder.drainEncoder(true);
+                        videoEncoder.releaseEncoder();
+                    }
                 } catch (Exception exception) {
                     exception.printStackTrace();
                 }

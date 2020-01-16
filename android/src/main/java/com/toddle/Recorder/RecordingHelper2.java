@@ -13,6 +13,8 @@ import android.view.Surface;
 
 import com.toddle.Sketch.DrawView;
 
+
+
 import java.io.File;
 import java.io.IOException;
 import java.nio.ByteBuffer;
@@ -38,6 +40,8 @@ public class RecordingHelper2 {
 
     private DrawView drawView;
 
+    private Recorder.RecorderListener listener;
+
     private MediaCodec.BufferInfo mBufferInfo;
 
     private MediaCodec mEncoder;
@@ -58,7 +62,7 @@ public class RecordingHelper2 {
         HEIGHT = 960;
     }
 
-    public RecordingHelper2(DrawView paramDrawView) { this.drawView = paramDrawView; }
+    public RecordingHelper2(Recorder.RecorderListener listener) { this.listener = listener; }
 
     private void drainEncoder(boolean paramBoolean) {
         int i;
@@ -136,7 +140,7 @@ public class RecordingHelper2 {
 
     private void generateFrame(int paramInt) {
         Canvas canvas = this.mInputSurface.lockCanvas(null);
-        this.drawView.drawOnCanvas(canvas);
+        this.listener.drawOnCanvas(canvas);
         this.mInputSurface.unlockCanvasAndPost(canvas);
     }
 

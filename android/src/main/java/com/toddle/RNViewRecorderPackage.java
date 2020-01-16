@@ -26,7 +26,10 @@ public class RNViewRecorderPackage implements ReactPackage {
     @Override
     public List<ViewManager> createViewManagers(ReactApplicationContext reactContext) {
         return Arrays.<ViewManager>asList(
-                new ReactDrawViewManager()
+                new ReactDrawViewManager(),
+                new ReactRecorderViewManager()
         );
     }
+
+
 }

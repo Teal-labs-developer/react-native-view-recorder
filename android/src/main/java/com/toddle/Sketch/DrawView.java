@@ -59,8 +59,6 @@ public class DrawView extends FrameLayout {
     private MyPath mPath = new MyPath();
     private PaintOptions mPaintOptions = new PaintOptions();
 
-    ImageView imageView;
-
 
     private float mCurX = 0f;
     private float mCurY = 0f;
@@ -70,6 +68,8 @@ public class DrawView extends FrameLayout {
     private boolean mIsStrokeWidthBarEnabled = false;
 
     private boolean isEraserOn = false;
+
+    private String drawingTool = "pen";
 
     private Canvas mCanvas;
     private Bitmap mBitmap;
@@ -130,96 +130,53 @@ public class DrawView extends FrameLayout {
         mPaint.setStrokeWidth(mPaintOptions.strokeWidth);
         mPaint.setAntiAlias(true);
 
-        imageView = new ImageView(getContext());
-
-        addView(imageView, new LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT));
-
 //        setOnTouchListener();
     }
 
-    public Bitmap getBitmap(){
-        Bitmap bitmap = Bitmap.createBitmap( this.getWidth(), this.getHeight(), Bitmap.Config.ARGB_8888);
-        Canvas canvas = new Canvas(bitmap);
-        canvas.drawColor(Color.WHITE);
-        mIsSaving = true;
-        drawOnCanvas(canvas);
-        mIsSaving = false;
-        return bitmap;
-    }
 
-    /** Create a File for saving an image or video */
-    private  File getOutputMediaFile(){
-        // To be safe, you should check that the SDCard is mounted
-        // using Environment.getExternalStorageState() before doing this.
-        File mediaStorageDir = getContext().getCacheDir();
-
-        // This location works best if you want the created images to be shared
-        // between applications and persist after your app has been uninstalled.
-
-        // Create the storage directory if it does not exist
-        if (! mediaStorageDir.exists()){
-            if (! mediaStorageDir.mkdirs()){
-                return null;
-            }
-        }
-        // Create a media file name
-        String timeStamp = new SimpleDateFormat("ddMMyyyy_HHmm").format(new Date());
-        File mediaFile;
-        String mImageName="MI_"+ timeStamp +".jpg";
-        mediaFile = new File(mediaStorageDir.getPath() + File.separator + mImageName);
-        return mediaFile;
-    }
-
-    public void saveAsImage(){
-        Bitmap bitmap = getBitmap();
-
-        File pictureFile = getOutputMediaFile();
-        if (pictureFile == null) {
-            Log.d(TAG,
-                    "Error creating media file, check storage permissions: ");// e.getMessage());
-            return;
-        }
-        try {
-            FileOutputStream fos = new FileOutputStream(pictureFile);
-            bitmap.compress(Bitmap.CompressFormat.PNG, 100, fos);
-            fos.close();
-            onImageStored(pictureFile, bitmap.getWidth(), bitmap.getHeight());
-            bitmap.recycle();
-        } catch (FileNotFoundException e) {
-            Log.d(TAG, "File not found: " + e.getMessage());
-        } catch (IOException e) {
-            Log.d(TAG, "Error accessing file: " + e.getMessage());
-        }
-    }
 
     public void addPath(MyPath path, PaintOptions options) {
         mPaths.add(new Stroke(path, options));
     }
 
 
-    private void refreshView(){
+    private void refreshView(boolean update){
 //        mCanvas.drawColor(Color.TRANSPARENT);
 
 //        changePaint(mPaintOptions);
 //        mCanvas.drawPath(mPath, mPaint);
 
-        invalidate();
+        if(update){
+            readyCanvas(getWidth(), getHeight());
+            mCanvas.drawColor(Color.TRANSPARENT);
+            ListIterator iterator = mPaths.listIterator(0);
+
+            while(iterator.hasNext()){
+                Stroke stroke = (Stroke) iterator.next();
+                if(mCanvas != null){
+                    changePaint(stroke.paintOptions);
+                    mCanvas.drawPath(stroke.path, mPaint);
+                }
+            }
+        }
+
+        postInvalidate();
     }
 
     @Override
     protected void dispatchDraw(Canvas canvas) {
         super.dispatchDraw(canvas);
 
-        mCanvas.drawColor(Color.TRANSPARENT);
+//        mCanvas.drawColor(Color.TRANSPARENT);
         ListIterator iterator = mPaths.listIterator(0);
 
-        while(iterator.hasNext()){
-            Stroke stroke = (Stroke) iterator.next();
-            if(mCanvas != null){
-                changePaint(stroke.paintOptions);
-                mCanvas.drawPath(stroke.path, mPaint);
-            }
-        }
+//        while(iterator.hasNext()){
+//            Stroke stroke = (Stroke) iterator.next();
+//            if(mCanvas != null){
+//                changePaint(stroke.paintOptions);
+//                mCanvas.drawPath(stroke.path, mPaint);
+//            }
+//        }
 
         changePaint(mPaintOptions);
         mCanvas.drawPath(mPath, mPaint);
@@ -243,6 +200,8 @@ public class DrawView extends FrameLayout {
         canvas.restore();
 //        if(onDrawListener != null) onDrawListener.onDraw();
     }
+
+
 
     /**
      * Returns the bitmap position inside an imageView.
@@ -293,47 +252,12 @@ public class DrawView extends FrameLayout {
 
     Bitmap imageBitmap;
 
-    public void drawOnCanvas(Canvas canvas){
-        try {
-            if(imageBitmap == null){
-                BitmapDrawable drawable = (BitmapDrawable) imageView.getDrawable();
-                if(drawable != null)
-                    imageBitmap = drawable.getBitmap();
-            }
 
-            canvas.drawColor(Color.WHITE);
-
-            if(imageBitmap != null)
-                canvas.drawBitmap(imageBitmap, imageView.getImageMatrix(), null);
-
-
-            Bitmap mBitmap = Bitmap.createBitmap(getWidth(), getHeight(), Bitmap.Config.ARGB_8888);
-            Canvas mCanvas = new Canvas(mBitmap);
-            mCanvas.drawColor(Color.TRANSPARENT);
-            ListIterator iterator = mPaths.listIterator(0);
-
-            while(iterator.hasNext()){
-                Stroke stroke = (Stroke) iterator.next();
-                if(mCanvas != null){
-                    mCanvas.drawPath(stroke.path, getPaint(stroke.paintOptions));
-                }
-            }
-            mCanvas.drawPath(mPath, getPaint(mPaintOptions));
-
-
-            canvas.drawBitmap(mBitmap, 0, 0, mBitmapPaint);
-
-            mBitmap.recycle();
-        }
-        catch (Exception e){
-            e.printStackTrace();
-        }
-    }
 
     private void changePaint(PaintOptions paintOptions) {
         mPaint.setColor(paintOptions.color);
 
-        if(paintOptions.isEraserOn){
+        if(paintOptions.drawingTool != null && paintOptions.drawingTool.equals("eraser")){
             mPaint.setXfermode(new PorterDuffXfermode(PorterDuff.Mode.CLEAR));
         }
         else{
@@ -353,7 +277,7 @@ public class DrawView extends FrameLayout {
         paint.setAntiAlias(true);
         paint.setColor(paintOptions.color);
 
-        if(paintOptions.isEraserOn){
+        if(paintOptions.drawingTool != null && paintOptions.drawingTool.equals("eraser")){
             paint.setXfermode(new PorterDuffXfermode(PorterDuff.Mode.CLEAR));
         }
         else{
@@ -370,7 +294,7 @@ public class DrawView extends FrameLayout {
         mPath.reset();
         mLastPaths.clear();
         readyCanvas(getWidth(), getHeight());
-        refreshView();
+        refreshView(false);
         onEventStackUpdated();
     }
 
@@ -401,7 +325,7 @@ public class DrawView extends FrameLayout {
         mLastPaths = (LinkedList<Stroke>) mPaths.clone();
         mPath = new MyPath();
         mPaintOptions = new PaintOptions(mPaintOptions.color, mPaintOptions.strokeWidth
-                , mPaintOptions.alpha, mPaintOptions.isEraserOn);
+                , mPaintOptions.alpha, mPaintOptions.isEraserOn, drawingTool);
     }
 
 
@@ -430,7 +354,11 @@ public class DrawView extends FrameLayout {
 
         }
 
-        refreshView();
+//        refreshView();
+
+        float strokeWidth = mPaintOptions.strokeWidth;
+        postInvalidate((int)(event.getX()-2*strokeWidth),(int)(event.getY()-2*strokeWidth)
+                ,(int)(event.getX()+2*strokeWidth),(int)(event.getY()+2*strokeWidth));
 
         if(event.getAction() == MotionEvent.ACTION_UP){
             onEventStackUpdated();
@@ -439,41 +367,39 @@ public class DrawView extends FrameLayout {
         return true;
     }
 
-    @Override
-    public boolean onTouchEvent(MotionEvent event) {
-        float x = event.getX();
-        float y = event.getY();
-
-        Log.i("DrawView", "event"+x+" "+y);
-
-        switch (event.getAction()){
-            case MotionEvent.ACTION_DOWN:
-                mStartX = x;
-                mStartY = y;
-                actionDown(x, y);
-                mUndonePaths.clear();
-                break;
-            case MotionEvent.ACTION_MOVE:
-                actionMove(x, y);
-                break;
-            case MotionEvent.ACTION_UP:
-                actionUp();
-                break;
-            default:
-                break;
-
-        }
-
-        refreshView();
-
-
-
-        if(event.getAction() == MotionEvent.ACTION_UP){
-            onEventStackUpdated();
-        }
-
-        return true;
-    }
+//    @Override
+//    public boolean onTouchEvent(MotionEvent event) {
+//        float x = event.getX();
+//        float y = event.getY();
+//
+//        switch (event.getAction()){
+//            case MotionEvent.ACTION_DOWN:
+//                mStartX = x;
+//                mStartY = y;
+//                actionDown(x, y);
+//                mUndonePaths.clear();
+//                break;
+//            case MotionEvent.ACTION_MOVE:
+//                actionMove(x, y);
+//                break;
+//            case MotionEvent.ACTION_UP:
+//                actionUp();
+//                break;
+//            default:
+//                break;
+//
+//        }
+//
+//        refreshView(false);
+//
+//
+//
+//        if(event.getAction() == MotionEvent.ACTION_UP){
+//            onEventStackUpdated();
+//        }
+//
+//        return true;
+//    }
 
     public void setIsErasing(boolean isErasing){
         isEraserOn = isErasing;
@@ -490,26 +416,6 @@ public class DrawView extends FrameLayout {
             mPaintOptions.color = Color.parseColor(color);
     }
 
-    public void setBackgroundImage(String uri){
-        if(uri != null){
-            if(uri.contains("://")){
-                imageView.setImageURI(Uri.parse(uri));
-            }
-            else{
-                File imgFile = new  File(uri);
-                if(imgFile.exists()){
-                    Bitmap myBitmap = BitmapFactory.decodeFile(imgFile.getAbsolutePath());
-
-                    imageView.setImageBitmap(myBitmap);
-                }
-
-            }
-        }
-
-
-//            imageView.setBackgroundResource(android.R.mipmap.sym_def_app_icon);
-    }
-
     public void toggleEraser(){
         isEraserOn = !isEraserOn;
         mPaintOptions.isEraserOn = isEraserOn;
@@ -518,8 +424,8 @@ public class DrawView extends FrameLayout {
     public void undo(){
         if(mPaths.size()>0){
             mPaths.removeLast();
-            readyCanvas(getWidth(),  getHeight());
-            refreshView();
+//            readyCanvas(getWidth(),  getHeight());
+            refreshView(true);
             onEventStackUpdated();
         }
 
@@ -528,8 +434,8 @@ public class DrawView extends FrameLayout {
     public void redo(){
         if(mLastPaths.size() > mPaths.size()){
             mPaths.add(mLastPaths.get(mPaths.size()));
-            readyCanvas(getWidth(),  getHeight());
-            refreshView();
+//            readyCanvas(getWidth(),  getHeight());
+            refreshView(true);
             onEventStackUpdated();
         }
     }
@@ -546,29 +452,6 @@ public class DrawView extends FrameLayout {
     }
 
 
-
-    Recorder recorder;
-    public void startRecording(){
-        recorder = new Recorder(this);
-        recorder.startRecording();
-    }
-
-    public void stopRecording(){
-        recorder.stopRecording();
-    }
-
-    public void onRecordingDone(){
-        File file = recorder.outputFile;
-        WritableMap event = Arguments.createMap();
-        event.putString("path", file.getAbsolutePath());
-        event.putString("uri", file.getAbsolutePath());
-        event.putInt("width", getWidth());
-        event.putInt("height", getHeight());
-        ReactContext reactContext = (ReactContext) getContext();
-        reactContext.getJSModule(RCTEventEmitter.class).receiveEvent(getId(), "onRecorded", event);
-    }
-
-
     public void onEventStackUpdated(){
         WritableMap event = Arguments.createMap();
         event.putBoolean("canRedo", canRedo());
@@ -577,14 +460,11 @@ public class DrawView extends FrameLayout {
         reactContext.getJSModule(RCTEventEmitter.class).receiveEvent(getId(), "onEventStackUpdated", event);
     }
 
-    public void onImageStored(File imageFile, int width, int height){
-        WritableMap event = Arguments.createMap();
-        event.putString("path", imageFile.getAbsolutePath());
-        event.putString("uri", Uri.fromFile(imageFile).toString());
-        event.putInt("width", width);
-        event.putInt("height", height);
-        ReactContext reactContext = (ReactContext) getContext();
-        reactContext.getJSModule(RCTEventEmitter.class).receiveEvent(getId(), "onImageStored", event);
+    public void setDrawingTool(String drawingTool) {
+        this.drawingTool = drawingTool;
+        mPaintOptions.drawingTool = drawingTool;
+
+        changePaint(mPaintOptions);
     }
 }
 

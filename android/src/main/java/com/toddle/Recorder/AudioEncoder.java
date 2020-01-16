@@ -4,9 +4,13 @@ import android.content.Context;
 import android.media.MediaCodec;
 import android.media.MediaFormat;
 import android.media.MediaMuxer;
+import android.os.Build;
 import android.os.Environment;
 import android.util.Log;
 import android.widget.Toast;
+
+import androidx.annotation.RequiresApi;
+
 import java.io.File;
 import java.io.IOException;
 import java.nio.ByteBuffer;
@@ -61,6 +65,7 @@ public class AudioEncoder {
 
     int totalOutputAudioFrameCount = 0;
 
+    @RequiresApi(api = Build.VERSION_CODES.JELLY_BEAN_MR2)
     public AudioEncoder(Context paramContext) {
         this.c = paramContext;
         try {
@@ -72,6 +77,7 @@ public class AudioEncoder {
         }
     }
 
+    @RequiresApi(api = Build.VERSION_CODES.JELLY_BEAN_MR2)
     private void _offerAudioEncoder(byte[] paramArrayOfByte, long paramLong) {
         if (audioBytesReceived == 0L)
             this.audioStartTime = paramLong;
@@ -126,6 +132,7 @@ public class AudioEncoder {
         }
     }
 
+    @RequiresApi(api = Build.VERSION_CODES.JELLY_BEAN_MR2)
     private void drainEncoder(MediaCodec paramMediaCodec, MediaCodec.BufferInfo paramBufferInfo, TrackIndex paramTrackIndex, boolean paramBoolean) {
         int i;
         StringBuilder stringBuilder2 = new StringBuilder();
@@ -220,6 +227,7 @@ public class AudioEncoder {
         Log.i("AudioEncoder-Stats", stringBuilder.toString());
     }
 
+    @RequiresApi(api = Build.VERSION_CODES.JELLY_BEAN_MR2)
     private void prepare() throws IOException {
         audioBytesReceived = 0L;
         numTracksAdded = 0;
@@ -240,13 +248,13 @@ public class AudioEncoder {
 //        Toast.makeText(context, stringBuilder2.toString(), Toast.LENGTH_SHORT).show();
         this.mAudioBufferInfo = new MediaCodec.BufferInfo();
         this.audioFormat = new MediaFormat();
-        this.audioFormat.setString("mime", "audio/mp4a-latm");
+        this.audioFormat.setString("mime", MediaFormat.MIMETYPE_AUDIO_MPEG);
         this.audioFormat.setInteger("aac-profile", 2);
         this.audioFormat.setInteger("sample-rate", 44100);
         this.audioFormat.setInteger("channel-count", 1);
         this.audioFormat.setInteger("bitrate", 128000);
         this.audioFormat.setInteger("max-input-size", 16384);
-        this.mAudioEncoder = MediaCodec.createEncoderByType("audio/mp4a-latm");
+        this.mAudioEncoder = MediaCodec.createEncoderByType(MediaFormat.MIMETYPE_AUDIO_MPEG);
         this.mAudioEncoder.configure(this.audioFormat, null, null, MediaCodec.CONFIGURE_FLAG_ENCODE);
         this.mAudioEncoder.start();
         this.mMuxer = new MediaMuxer(file.getAbsolutePath(), MediaMuxer.OutputFormat.MUXER_OUTPUT_MPEG_4);
@@ -259,6 +267,7 @@ public class AudioEncoder {
         Log.i(TAG, "Audio stopped");
     }
 
+    @RequiresApi(api = Build.VERSION_CODES.JELLY_BEAN_MR2)
     public void closeEncoder(MediaCodec paramMediaCodec, MediaCodec.BufferInfo paramBufferInfo, TrackIndex paramTrackIndex) {
         drainEncoder(paramMediaCodec, paramBufferInfo, paramTrackIndex, true);
         try {
@@ -271,6 +280,7 @@ public class AudioEncoder {
         }
     }
 
+    @RequiresApi(api = Build.VERSION_CODES.JELLY_BEAN_MR2)
     public void closeEncoderAndMuxer(MediaCodec paramMediaCodec, MediaCodec.BufferInfo paramBufferInfo, TrackIndex paramTrackIndex) {
         drainEncoder(paramMediaCodec, paramBufferInfo, paramTrackIndex, true);
         try {
@@ -284,6 +294,7 @@ public class AudioEncoder {
         }
     }
 
+    @RequiresApi(api = Build.VERSION_CODES.JELLY_BEAN_MR2)
     public void closeMuxer() {
         this.mMuxer.stop();
         this.mMuxer.release();
@@ -342,6 +353,7 @@ public class AudioEncoder {
             setEncodeFrameParams(param1ArrayOfByte, param1Long);
         }
 
+        @RequiresApi(api = Build.VERSION_CODES.JELLY_BEAN_MR2)
         private void encodeFrame() {
             AudioEncoder audioEncoder = this.encoder;
             if (audioEncoder != null) {
@@ -371,7 +383,9 @@ public class AudioEncoder {
             if (this.is_initialized) {
                 switch (this.type) {
                     case ENCODE_FRAME:
-                        encodeFrame();
+                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR2) {
+                            encodeFrame();
+                        }
                         break;
                     case FINALIZE_ENCODER:
                         finalizeEncoder();

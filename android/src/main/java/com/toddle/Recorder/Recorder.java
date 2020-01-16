@@ -1,8 +1,11 @@
 package com.toddle.Recorder;
 
+import android.content.Context;
+import android.graphics.Canvas;
 import android.media.MediaCodec;
 import android.media.MediaFormat;
 import android.media.MediaMuxer;
+import android.os.Build;
 import android.os.Environment;
 
 import android.os.Handler;
@@ -16,13 +19,12 @@ import java.io.IOException;
 import java.nio.ByteBuffer;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.RequiresApi;
 
 public class Recorder implements EncoderListener {
     AudioRecorder audioRecorder;
 
     String TAG = "Recorder";
-
-    DrawView drawView;
 
     MediaMuxer muxer;
 
@@ -38,9 +40,14 @@ public class Recorder implements EncoderListener {
 
     VideoRecorder videoRecorder;
 
-    public Recorder(DrawView paramDrawView) {
-        this.drawView = paramDrawView;
-        File file = paramDrawView.getContext().getCacheDir();
+    RecorderListener listener;
+
+    long presentationTimeUs;
+
+    @RequiresApi(api = Build.VERSION_CODES.JELLY_BEAN_MR2)
+    public Recorder(RecorderListener listener) {
+        this.listener = listener;
+        File file = listener.getContext().getCacheDir();
         StringBuilder stringBuilder = new StringBuilder();
         stringBuilder.append("drawing-");
         stringBuilder.append(System.currentTimeMillis());
@@ -52,10 +59,11 @@ public class Recorder implements EncoderListener {
         } catch (IOException e) {
             e.printStackTrace();
         }
-        this.videoRecorder = new VideoRecorder(this, paramDrawView);
+        this.videoRecorder = new VideoRecorder(this, listener);
         this.audioRecorder = new AudioRecorder(this);
     }
 
+    @RequiresApi(api = Build.VERSION_CODES.JELLY_BEAN_MR2)
     public int addTrackToMuxer(MediaFormat paramMediaFormat) {
         this.numOfTracks++;
         return this.muxer.addTrack(paramMediaFormat);
@@ -63,6 +71,7 @@ public class Recorder implements EncoderListener {
 
     public boolean isMuxerStarted() { return this.muxerStarted; }
 
+    @RequiresApi(api = Build.VERSION_CODES.JELLY_BEAN_MR2)
     public void releaseMuxer() {
         try {
             if (this.muxer != null) {
@@ -75,17 +84,19 @@ public class Recorder implements EncoderListener {
                 runOnUiThread(new Runnable() {
                     @Override
                     public void run() {
-                        drawView.onRecordingDone();
+                        listener.onRecordingDone(false);
                     }
                 });
             }
             return;
         } catch (Exception exception) {
             exception.printStackTrace();
+            listener.onRecordingDone(true);
             return;
         }
     }
 
+    @RequiresApi(api = Build.VERSION_CODES.JELLY_BEAN_MR2)
     public void startMuxer() {
         String str = TAG;
         StringBuilder stringBuilder = new StringBuilder();
@@ -119,9 +130,13 @@ public class Recorder implements EncoderListener {
         }
     }
 
+    @RequiresApi(api = Build.VERSION_CODES.JELLY_BEAN_MR2)
     public void writeSampleData(int paramInt, @NonNull ByteBuffer paramByteBuffer, @NonNull MediaCodec.BufferInfo paramBufferInfo) {
         try {
-            this.muxer.writeSampleData(paramInt, paramByteBuffer, paramBufferInfo);
+            if(this.muxerStarted) {
+                this.muxer.writeSampleData(paramInt, paramByteBuffer, paramBufferInfo);
+
+            }
             return;
         } catch (Exception e) {
             e.printStackTrace();
@@ -136,14 +151,32 @@ public class Recorder implements EncoderListener {
 
     @Override
     public void onRecorded() {
-        drawView.onRecordingDone();
+        listener.onRecordingDone(false);
+    }
+
+    @Override
+    public long getPresentationTimeUs() {
+        return presentationTimeUs;
+    }
+
+    @Override
+    public void setPresentationTimeUs(long presentationTimeUs) {
+        this.presentationTimeUs = presentationTimeUs;
     }
 
     enum RECORDING_STATES {
         STARTED, STOPPED;
     }
 
-    public static interface RecorderListener {
-        void onStateChanged(Recorder.RECORDING_STATES param1RECORDING_STATES);
+//    public static interface RecorderListener {
+//        void onStateChanged(Recorder.RECORDING_STATES param1RECORDING_STATES);
+//    }
+
+    public interface RecorderListener{
+        void onRecordingDone(boolean error);
+        Context getContext();
+        void drawOnCanvas(Canvas canvas);
+        int getCanvasHeight();
+        int getCanvasWidth();
     }
 }
