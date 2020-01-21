@@ -68,7 +68,7 @@ public class VideoRecorder {
 
 
 
-        executorService.submit(new Runnable() {
+        executorService.execute(new Runnable() {
             @Override
             public void run() {
                 while (isRecording){

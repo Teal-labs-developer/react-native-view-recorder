@@ -48,11 +48,9 @@ public class Recorder implements EncoderListener {
     public Recorder(RecorderListener listener) {
         this.listener = listener;
         File file = listener.getContext().getCacheDir();
-        StringBuilder stringBuilder = new StringBuilder();
-        stringBuilder.append("drawing-");
-        stringBuilder.append(System.currentTimeMillis());
-        stringBuilder.append(".mp4");
-        this.outputFile = new File(file, stringBuilder.toString());
+        String fileName = "drawing-"+System.currentTimeMillis()+".mp4";
+
+        this.outputFile = new File(file, fileName);
         this.state = RECORDING_STATES.STOPPED;
         try {
             this.muxer = new MediaMuxer(this.outputFile.getAbsolutePath(), MediaMuxer.OutputFormat.MUXER_OUTPUT_MPEG_4);
@@ -99,15 +97,11 @@ public class Recorder implements EncoderListener {
     @RequiresApi(api = Build.VERSION_CODES.JELLY_BEAN_MR2)
     public void startMuxer() {
         String str = TAG;
-        StringBuilder stringBuilder = new StringBuilder();
-        stringBuilder.append("starting muxer in recorder ");
-        stringBuilder.append(this.numOfTracks);
-        stringBuilder.append(" ");
-        stringBuilder.append(this.totalTracks);
-        Log.i(str, stringBuilder.toString());
+        Log.i(str, "starting muxer in recorder "+this.numOfTracks+" "+this.totalTracks);
         if (this.numOfTracks == this.totalTracks) {
             this.muxer.start();
             this.muxerStarted = true;
+            Log.i(TAG, "muxer started");
             return;
         }
     }
@@ -175,7 +169,7 @@ public class Recorder implements EncoderListener {
     public interface RecorderListener{
         void onRecordingDone(boolean error);
         Context getContext();
-        void drawOnCanvas(Canvas canvas);
+        void drawOnCanvas(Canvas canvas, boolean image);
         int getCanvasHeight();
         int getCanvasWidth();
     }

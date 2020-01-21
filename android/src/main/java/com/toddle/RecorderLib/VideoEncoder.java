@@ -69,6 +69,17 @@ public class VideoEncoder {
         prepareEncoder();
     }
 
+    /*
+    * 640×480-, 800×600-, 960×720-, 1024×768-, 1280×960-, 1400-×1050-, 1440-×1080-, 1600×1200-, 1856×1392, 1920×1440,
+    *  2048×1536.
+16:10 aspect ratio resolutions: 1280×800, 1440×900, 1680×1050, 1920×1200, and 2560×1600.
+16:9 aspect ratio resolutions: 1024×576, 1152×648, 1280×720, 1366×768, 1600×900,
+*  1920×1080, 2560×1440, 3840×2160 7680 x 4320
+*
+* 480-, 640-, 720-, 1024-, 1280-, 1440-, 1920, 2048, 2160, 2560, 3840, 4320,
+*
+    * */
+
 
     @RequiresApi(api = Build.VERSION_CODES.JELLY_BEAN_MR2)
     private void prepareEncoder() throws IOException {
@@ -77,7 +88,7 @@ public class VideoEncoder {
         mediaFormat.setInteger("color-format",MediaCodecInfo.CodecCapabilities.COLOR_FormatSurface);
         //2130708361
 
-        mediaFormat.setInteger("bitrate", 300000);
+        mediaFormat.setInteger("bitrate", WIDTH*HEIGHT*8);
         mediaFormat.setInteger("frame-rate", 20);
         mediaFormat.setFloat("i-frame-interval", 0.1f);
         String str = TAG;
@@ -118,15 +129,17 @@ public class VideoEncoder {
             } else if (encoderStatus == MediaCodec.INFO_OUTPUT_FORMAT_CHANGED) {
                 // should happen before receiving buffers, and should only happen once
                 if (mMuxerStarted) {
-                    throw new RuntimeException("format changed twice");
+//                    throw new RuntimeException("format changed twice");
                 }
-                MediaFormat newFormat = mEncoder.getOutputFormat();
-                Log.d(TAG, "encoder output format changed: " + newFormat);
+                else{
+                    MediaFormat newFormat = mEncoder.getOutputFormat();
+                    Log.d(TAG, "encoder output format changed: " + newFormat);
 
-                // now that we have the Magic Goodies, start the muxer
-                mTrackIndex = encoderListener.addTrackToMuxer(newFormat);
-                encoderListener.startMuxer();
-                mMuxerStarted = true;
+                    // now that we have the Magic Goodies, start the muxer
+                    mTrackIndex = encoderListener.addTrackToMuxer(newFormat);
+                    encoderListener.startMuxer();
+                    mMuxerStarted = true;
+                }
             } else if (encoderStatus < 0) {
                 Log.w(TAG, "unexpected result from encoder.dequeueOutputBuffer: " +
                         encoderStatus);
@@ -195,7 +208,7 @@ public class VideoEncoder {
 
         try{
 
-            listener.drawOnCanvas(canvas);
+            listener.drawOnCanvas(canvas, false);
         }finally {
             mInputSurface.unlockCanvasAndPost(canvas);
         }

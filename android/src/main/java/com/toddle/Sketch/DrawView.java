@@ -360,7 +360,7 @@ public class DrawView extends FrameLayout {
         postInvalidate((int)(event.getX()-2*strokeWidth),(int)(event.getY()-2*strokeWidth)
                 ,(int)(event.getX()+2*strokeWidth),(int)(event.getY()+2*strokeWidth));
 
-        if(event.getAction() == MotionEvent.ACTION_UP){
+        if(event.getAction() == MotionEvent.ACTION_UP || event.getAction() == MotionEvent.ACTION_DOWN){
             onEventStackUpdated();
         }
 
@@ -411,7 +411,6 @@ public class DrawView extends FrameLayout {
     }
 
     public void setColor(String color){
-        Log.i("DrawView", "setColor "+color);
         if(color != null)
             mPaintOptions.color = Color.parseColor(color);
     }

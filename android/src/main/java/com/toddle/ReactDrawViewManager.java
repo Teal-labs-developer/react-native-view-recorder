@@ -63,12 +63,16 @@ public class ReactDrawViewManager extends SimpleViewManager<DrawView> {
 
     @ReactProp(name = "drawingTool")
     public void setDrawingTool(DrawView view, @Nullable String colorString) {
-//        view.setDrawingTool(colorString);
+        view.setDrawingTool(colorString);
     }
 
     @ReactProp(name = "colorString")
     public void setColorString(DrawView view, @Nullable String colorString) {
-//        view.setColor(colorString);
+        view.setColor(colorString);
+    }
+
+    @ReactProp(name = "opacity")
+    public void setOpacity(DrawView view, @Nullable float opacity) {
     }
 
 

@@ -4,7 +4,9 @@ import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Color;
+import android.graphics.Paint;
 import android.graphics.drawable.BitmapDrawable;
+import android.hardware.Camera;
 import android.net.Uri;
 import android.os.Build;
 import android.util.AttributeSet;
@@ -27,6 +29,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.List;
 import java.util.ListIterator;
 
 public class RecorderView extends FrameLayout implements Recorder.RecorderListener {
@@ -114,7 +117,7 @@ public class RecorderView extends FrameLayout implements Recorder.RecorderListen
         Canvas canvas = new Canvas(bitmap);
 //        canvas.drawColor(Color.WHITE);
         mIsSaving = true;
-        drawOnCanvas(canvas);
+        drawOnCanvas(canvas, true);
         mIsSaving = false;
         return bitmap;
     }
@@ -140,13 +143,24 @@ public class RecorderView extends FrameLayout implements Recorder.RecorderListen
 //    Bitmap imageBitmap;
 
     @Override
-    public void drawOnCanvas(Canvas canvas) {
+    public void drawOnCanvas(Canvas canvas, boolean image) {
 
         try {
-//            Bitmap b = Bitmap.createBitmap(getWidth() , getHeight(), Bitmap.Config.ARGB_8888);
-//            Canvas c = new Canvas(b);
+            if(image){
+                draw(canvas);
+            }
+            else{
+                Bitmap b = Bitmap.createBitmap(getWidth() , getHeight(), Bitmap.Config.ARGB_8888);
+                Canvas c = new Canvas(b);
+                draw(c);
 //            layout(0, 0, getLayoutParams().width, getLayoutParams().height);
-            draw(canvas);
+                Bitmap scaledBitmap = Bitmap.createScaledBitmap(b, getCanvasWidth(), getCanvasHeight(), true);
+                Paint paint = new Paint();
+                paint.setAntiAlias(true);
+                canvas.drawBitmap(scaledBitmap, 0,0,paint);
+                b.recycle();
+                scaledBitmap.recycle();
+            }
         }
         catch (Exception e){
             e.printStackTrace();
@@ -155,12 +169,73 @@ public class RecorderView extends FrameLayout implements Recorder.RecorderListen
 
     @Override
     public int getCanvasHeight() {
-        return getHeight();
+        int height = getHeight();
+        int width = getWidth();
+
+        if(height > width){
+            //portrait
+            //if height is greater than 720 then 720
+            //otherwise return getHeight
+            if(height > 720){
+                return  720;
+            }
+            else{
+                return height;
+            }
+        }
+        else{
+            //landscape
+            //if width is greater than 720 then scale height accordingly
+            //otherwise return getHeight
+            if(width > 720){
+                int result = height * 720 / width;
+                return result % 2 != 0 ? result+1 : result;
+            }
+            else{
+                return height;
+            }
+        }
+//        return height;
     }
 
     @Override
     public int getCanvasWidth() {
-        return getWidth();
+        //available dimen
+        //480, 640, 720, 1080, 1280, 1920
+        int height = getHeight();
+        int width = getWidth();
+
+        if(height > width){
+            //portrait
+            //if height > 720 then scale width accordingly
+            //else return width
+            if(height > 720){
+                int result = width * 720 / height;
+                return result % 2 != 0 ? result+1 : result;
+            }
+            else{
+                return width;
+            }
+        }
+        else{
+            //landscape
+            //if width > 720 then return 720
+            //else return height
+            if(width > 720){
+                return 720;
+            }
+            else{
+                return width;
+            }
+
+        }
+
+//        List<Camera.Size> list = Camera.open().getParameters().getSupportedVideoSizes();
+//        for(int i = 0; i < list.size(); i++){
+//            Camera.Size size = list.get(i);
+//            Log.i(TAG, "camera supporoted  "+size.width+" "+size.height);
+//        }
+//        return getWidth();
     }
 
     public void onImageStored(File imageFile, int width, int height){

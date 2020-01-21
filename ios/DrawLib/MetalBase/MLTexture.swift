@@ -51,9 +51,12 @@ public extension MTLTexture {
         guard let ciimage = toCIImage() else {
             return nil
         }
-//        let context = CIContext() // Prepare for create CGImage
+       var context = CIContext() // Prepare for create CGImage
+       if(context.description.contains("opengl")){
+           context = CIContext(mtlDevice: device)
+       }
 //        let context = CIContext(options: [.priorityRequestLow : true, .useSoftwareRenderer: false])
-        let context = CIContext(mtlDevice: device)
+        // let context = CIContext(mtlDevice: device)
 //        print(context.description, CIContext().description)
         let rect = CGRect(origin: .zero, size: ciimage.extent.size)
         return context.createCGImage(ciimage, from: rect)

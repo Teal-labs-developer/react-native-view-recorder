@@ -140,7 +140,7 @@ public class RecordingHelper2 {
 
     private void generateFrame(int paramInt) {
         Canvas canvas = this.mInputSurface.lockCanvas(null);
-        this.listener.drawOnCanvas(canvas);
+        this.listener.drawOnCanvas(canvas, false);
         this.mInputSurface.unlockCanvasAndPost(canvas);
     }
 
