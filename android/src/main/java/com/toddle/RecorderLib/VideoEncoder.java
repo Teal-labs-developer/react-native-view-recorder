@@ -88,7 +88,7 @@ public class VideoEncoder {
         mediaFormat.setInteger("color-format",MediaCodecInfo.CodecCapabilities.COLOR_FormatSurface);
         //2130708361
 
-        mediaFormat.setInteger("bitrate", WIDTH*HEIGHT*8);
+        mediaFormat.setInteger("bitrate", WIDTH*HEIGHT*6);
         mediaFormat.setInteger("frame-rate", 20);
         mediaFormat.setFloat("i-frame-interval", 0.1f);
         String str = TAG;
