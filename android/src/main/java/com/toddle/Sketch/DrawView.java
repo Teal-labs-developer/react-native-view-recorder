@@ -411,6 +411,7 @@ public class DrawView extends FrameLayout {
     }
 
     public void setColor(String color){
+        Log.i("DrawView", "setColor "+color+" alpha "+mPaintOptions.alpha);
         if(color != null)
             mPaintOptions.color = Color.parseColor(color);
     }

@@ -8,6 +8,7 @@
 
 import UIKit
 import Photos
+import MetalKit
 class RecorderView: UIView, ViewRecorderDelegate {
     func onRecordedLocal(_ view: ViewRecorder, result: Dictionary<String, Any>) {
         self.onRecordedLocal(result: result);
@@ -21,6 +22,19 @@ class RecorderView: UIView, ViewRecorderDelegate {
     @objc var onImageStored: RCTDirectEventBlock?
     @objc var onRecorded: RCTDirectEventBlock?
     @objc var onSetupDone: RCTDirectEventBlock?
+    
+    @objc var backgroundType: String = ""{
+        didSet{
+            setNeedsDisplay()
+        }
+    }
+    @objc var backgroundColorString: String = "#dbdbdb"
+    
+    let space = 48
+    
+    let utils:DrawUtils = DrawUtils()
+        
+    let tan30 = tan(30.0*(M_PI / 180))
     
     var viewRecorder: ViewRecorder!
     
@@ -58,6 +72,10 @@ class RecorderView: UIView, ViewRecorderDelegate {
                 self.onRecorded!(["uri":self.viewRecorder.assetWriter?.outputURL.absoluteString,  "path":self.viewRecorder.assetWriter?.outputURL.path, "width": self.frame.width, "height": self.frame.height])
             }
         }
+    }
+    
+    func getColor()->CGColor{
+        return utils.hexStringToUIColor(hex: backgroundColorString).cgColor;
     }
     
     
@@ -136,6 +154,25 @@ class RecorderView: UIView, ViewRecorderDelegate {
                 setNeedsDisplay()
             }
         }
+    
+    override func draw(_ rect: CGRect) {
+        let context = UIGraphicsGetCurrentContext()
+        
+        if(backgroundType == "dots"){
+            self.drawDots(in: context!)
+        }
+        else if(backgroundType == "math"){
+            self.drawVerticalLines(in: context!)
+            self.drawHorizontalLines(in: context!)
+        }
+        else if(backgroundType == "lines"){
+            self.drawHorizontalLines(in: context!)
+        }
+        else if(backgroundType == "orthogonal"){
+            self.drawDiagnalRightLines(in: context!)
+            self.drawDiagonalLeftLines(in: context!)
+        }
+    }
     
     @objc func saveAsImage(){
         
@@ -243,8 +280,8 @@ class RecorderView: UIView, ViewRecorderDelegate {
                 if let context = UIGraphicsGetCurrentContext() {
                     context.setFillColor(UIColor.white.cgColor)
                     context.fill(CGRect(x: 0, y: 0, width: self.frame.width, height: self.frame.height))
-                    self.layer.render(in: context)
-    //                self.drawHierarchy(in: self.bounds, afterScreenUpdates: false)
+//                    self.layer.render(in: context)
+                    self.drawHierarchy(in: self.bounds, afterScreenUpdates: false)
                     
                     resultImage = UIGraphicsGetImageFromCurrentImageContext() ?? UIImage()
                 }
@@ -259,4 +296,129 @@ class RecorderView: UIView, ViewRecorderDelegate {
         return String((0..<length).map{ _ in letters.randomElement()! })
     }
     
+    
+    func drawHorizontalLines(in context: CGContext){
+            var startY = space / 2;
+            
+            var width = Int(self.bounds.width)
+            var height = Int(self.bounds.height)
+            
+            while(startY < height){
+                context.setLineWidth(1)
+                context.setStrokeColor(self.getColor())
+                context.move(to: CGPoint(x: 0, y: startY))
+                context.addLine(to: CGPoint(x: width, y: startY))
+                context.strokePath()
+                
+                startY = startY + space
+            }
+        }
+        
+        func drawVerticalLines(in context: CGContext){
+            var startX = space / 2;
+            
+            var width = Int(self.bounds.width)
+            var height = Int(self.bounds.height)
+            
+            while(startX < width){
+                context.setLineWidth(1)
+                context.setStrokeColor(self.getColor())
+                context.move(to: CGPoint(x: startX, y: 0))
+                context.addLine(to: CGPoint(x: startX, y: height))
+                context.strokePath()
+                
+                startX = startX + space
+            }
+        }
+        
+        func drawDots(in context: CGContext){
+            var startX = 0
+            var startY = 0
+            
+            let width = Int(self.bounds.width)
+            let height = Int(self.bounds.height)
+            
+            let size = CGSize(width: 2, height: 2)
+            
+            while(startY < height){
+                startX = space / 2
+                while(startX < width){
+                    context.setStrokeColor(self.getColor())
+                    let path = UIBezierPath(ovalIn: CGRect(origin: CGPoint(x: startX-1, y: startY-1), size: size))
+                    utils.hexStringToUIColor(hex: backgroundColorString).setFill()
+                    path.fill()
+                    context.addPath(path.cgPath)
+                    context.strokePath()
+                    startX = startX + space
+                }
+                startY = startY + space
+            }
+        }
+        
+        func drawDiagnalRightLines(in context: CGContext){
+            var startX = Double(space) / tan30
+            var startY = Double(space)
+
+            let width = Double(self.bounds.width)
+            let height = Double(self.bounds.height)
+            
+            let xSegment = Double(space) / tan30
+            let ySegment = Double(space)
+            
+            let numberOfLines = width / xSegment + height / ySegment
+            
+            var i = 0.0
+            
+            while(i < numberOfLines){
+                context.setLineWidth(1)
+                context.setStrokeColor(self.getColor())
+                context.move(to: CGPoint(x: 0, y: startY))
+                context.addLine(to: CGPoint(x: startX, y: 0))
+                context.strokePath()
+                
+                startX = startX + Double(space) / tan30
+                startY = startY + Double(space)
+                i = i + 1
+            }
+            
+            startX = (Double(space) / tan30)/2
+            while(startX < width){
+                context.setLineWidth(1)
+                context.setStrokeColor(self.getColor())
+                context.move(to: CGPoint(x: startX, y: 0))
+                context.addLine(to: CGPoint(x: startX, y: height))
+                context.strokePath()
+                
+                startX = startX + (Double(space) / tan30)/2
+            }
+            
+        }
+        
+        func drawDiagonalLeftLines(in context: CGContext){
+            let width = Double(self.bounds.width)
+            let height = Double(self.bounds.height)
+            
+            var i = 0.0
+            
+            let xSegment = Double(space) / tan30
+            let ySegment = Double(space)
+            
+            let numberOfLines = width / xSegment + height / ySegment
+            
+            let tempStartY = height.remainder(dividingBy: ySegment)
+            
+            var startX =  (tempStartY / tan30)
+            var startY = height - tempStartY
+            while(i < numberOfLines){
+                context.setLineWidth(1)
+                context.setStrokeColor(self.getColor())
+                context.move(to: CGPoint(x: 0, y: startY))
+                context.addLine(to: CGPoint(x: startX, y: height))
+                context.strokePath()
+                
+                startX = startX + Double(space) / tan30
+                startY = startY - Double(space)
+                i = i + 1
+            }
+        }
 }

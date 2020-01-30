@@ -324,6 +324,21 @@ open class Canvas: MetalView {
 //        actionObservers.canvas(self, didRenderChartlet: chartlet)
 //    }
     
+    func draw(context: CGContext){
+        guard metalAvaliable, let texture = screenTarget?.texture else {
+            return
+        }
+        autoreleasepool{
+//            let image = texture.toUIImage()!
+            let image = texture.toCGImage()
+            
+//            texture.toData()
+            
+            
+            context.draw(image!, in: CGRect(x: 0, y: 0, width: context.width, height: context.height))
+        }
+    }
+    
     func localOnDraw(){
        
         if(onDraw != nil && concurrentPhotoQueue != nil){
@@ -333,20 +348,22 @@ open class Canvas: MetalView {
 //            concurrentPhotoQueue?.async {
 //
 //            }
-            DispatchQueue.global(qos: .userInitiated).async {
+            
+//            DispatchQueue.global(qos: .userInitiated).async {
                 do{
                     try ObjC.catchException{
-                        let image = texture.toUIImage()!
-                        DispatchQueue.main.sync {
-                            self.onDraw!(image)
-                        }
+//                        let image = texture.toUIImage()!
+//                        DispatchQueue.main.sync {
+//                            let image = texture.toUIImage()!
+//                            self.onDraw!(image)
+//                        }
                         
                     }
                 }
                 catch{
                     print("problem getting image")
                 }
-            }
+//            }
         }
     }
     

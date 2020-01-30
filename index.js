@@ -9,8 +9,9 @@ const { RNViewRecorder } = NativeModules;
 
 exports.DrawView = requireNativeComponent("RNDrawView");
 exports.RecorderView = requireNativeComponent("RNViewRecorder");
-
-console.log("#######", NativeModules.DrawHelperManager);
+exports.OrthogonalPatternsView = requireNativeComponent(
+  "RNOrthogonalPatternsView"
+);
 
 exports.isDeviceCompatible = NativeModules.DrawHelperManager
   ? NativeModules.DrawHelperManager.isDeviceCompatible

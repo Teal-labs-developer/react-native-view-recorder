@@ -54,6 +54,10 @@ open class MetalView: MTKView {
             clearColor = (backgroundColor ?? .white).toClearColor()
         }
     }
+    
+    public func renderIn(context: CGContext){
+        self.metalLayer?.render(in: context)
+    }
 
     // MARK: - Setup
     
@@ -132,7 +136,7 @@ open class MetalView: MTKView {
     // render target for rendering contents to screen
     internal var screenTarget: RenderTarget?
     
-    private var commandQueue: MTLCommandQueue?
+    public var commandQueue: MTLCommandQueue?
 
     // Uniform buffers
     private var render_target_vertex: MTLBuffer!

@@ -8,7 +8,11 @@
 
 import Foundation
 
-class DrawingCanvas : UIView{
+class DrawingCanvas : UIView, MyLayerDelegate{
+    
+    public func getCanvas(_ view: MyLayer) -> Canvas {
+        return self.canvas!;
+    }
     
     class BrushWrapper{
         var brush:Brush?
@@ -104,33 +108,17 @@ class DrawingCanvas : UIView{
     @objc var onViewMount: RCTDirectEventBlock?
     
     var canvas:Canvas?
-    var canvasShadow:CanvasShadow?
   
     
     func initCanvas(){
-        if(self.canvasShadow == nil){
-            canvasShadow = CanvasShadow(frame: CGRect(x: 0, y: 0, width: self.frame.width, height: self.frame.height))
-        }
-        
         if(self.canvas == nil){
             canvas = Canvas(frame: self.frame)
             canvas!.autoResizeDrawable = true
-            canvas!.onDraw = { (image) in
-                if(self.canvasShadow != nil){
-                    self.canvasShadow!.image = image
-                    self.canvasShadow!.setNeedsDisplay()
-                }
-            }
         }
     }
     
     override func layoutSubviews() {
         self.initCanvas()
-        if(self.canvasShadow != nil){
-            canvasShadow?.frame = CGRect(x: 0, y: 0, width: self.frame.width, height: self.frame.height)
-            canvasShadow?.setNeedsLayout()
-        }
-        
         
         if(self.canvas != nil){
             canvas?.frame = CGRect(x: 0, y: 0, width: self.frame.width, height: self.frame.height)
@@ -145,20 +133,19 @@ class DrawingCanvas : UIView{
         if(self.canvas != nil && !self.canvas!.isDescendant(of: self)){
 //            print("##### transformData ", self.frame )
             
-            canvasShadow!.backgroundColor = UIColor.white.withAlphaComponent(0)
-            
-            canvasShadow!.canvas = canvas
-            
             canvas!.onEventOccured = {() in
                 self.onEventOccured()
             }
             canvas!.isOpaque = false;
             canvas!.backgroundColor = .clear
-            canvas!.alpha = 0.02
+            canvas!.alpha = 1
             canvas!.isUserInteractionEnabled = true
             
-            addSubview(canvasShadow!)
+//            addSubview(canvasShadow!)
             addSubview(canvas!)
+            
+            let layer:MyLayer = self.layer as! MyLayer
+            layer.myDelegate = self
         }
         
         
@@ -416,6 +403,103 @@ class DrawingCanvas : UIView{
     @objc public var canRedo: Bool {
         return (self.canvas?.data.canRedo)!
     }
+
+    
+    override open class var layerClass: AnyClass{
+        
+        return MyLayer.self;
+    }
+    
+    
+    @objc func saveAsImage(){
+        
+        DispatchQueue.global(qos: .userInitiated).async {
+            // Download file or perform expensive task
+            
+            let image:UIImage = self.getImage();
+            
+            let paths = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask)
+            if let filePath = paths.first?.appendingPathComponent(self.randomString(length: 5)+".png") {
+                // Save image.
+                do {
+                    try image.jpegData(compressionQuality: 1.0)?.write(to: filePath, options: .atomic)
+                    DispatchQueue.main.sync {
+                        // Update the UI
+                        
+                        if self.onImageStored != nil {
+                            DispatchQueue.main.async {
+                                self.onImageStored!(["uri":filePath.absoluteString,  "path":filePath.path, "width": self.frame.width, "height": self.frame.height])
+                            }
+                        }
+                    }
+                } catch {
+                    // Handle the error
+                }
+            }
+            
+            
+        }
+        
+    }
+    
+    public func getImage() -> UIImage{
+            let start = DispatchTime.now()
+            var resultImage:UIImage = UIImage()
+            
+            if #available(iOS 10.0, *), false {
+                let renderer = UIGraphicsImageRenderer(size: self.bounds.size)
+                
+                resultImage = renderer.image { ctx in
+                    self.drawHierarchy(in: self.bounds, afterScreenUpdates: false)
+                }
+                
+                
+            } else {
+                
+                // Fallback on earlier versions
+                UIGraphicsBeginImageContextWithOptions(self.bounds.size, self.isOpaque, 0.0)
+                defer { UIGraphicsEndImageContext() }
+                if let context = UIGraphicsGetCurrentContext() {
+                    context.setFillColor(UIColor.white.cgColor)
+                    context.fill(CGRect(x: 0, y: 0, width: self.frame.width, height: self.frame.height))
+                    
+                    
+                    canvas?.renderIn(context: context)
+                    
+    //                self.drawHierarchy(in: self.bounds, afterScreenUpdates: false)
+                    
+                    resultImage = UIGraphicsGetImageFromCurrentImageContext() ?? UIImage()
+                }
+            }
+            print("Time to get image  \(Double(DispatchTime.now().uptimeNanoseconds - start.uptimeNanoseconds) / 1_000_000_000) seconds")
+            
+            return resultImage
+        }
+    
+    public func getImage(context:CGContext){
+                let start = DispatchTime.now()
+                
+                
+                UIGraphicsPushContext(context);
+                
+                
+                // Fallback on earlier versions
+                 self.layer.render(in: context)
+    //        self.layer.presentation()?.render(in: context)
+        //        self.layer.renderIn
+                let scale = 50 / 100
+                let newRect = self.bounds.applying(CGAffineTransform(scaleX: CGFloat(scale), y: CGFloat(scale)))
+            //417, 563
+//            self.snapshotView(afterScreenUpdates: false)?.layer.render(in: context)
+    //        self.drawHierarchy(in: self.bounds, afterScreenUpdates: false)
+            
+                
+                
+                UIGraphicsPopContext();
+
+                
+            print("Time to get image  \(Double(DispatchTime.now().uptimeNanoseconds - start.uptimeNanoseconds) / 1_000_000_000) seconds ",self.bounds.width, self.bounds.height)
+            }
     
     private func registerBrushes() throws {
         let start = DispatchTime.now()
@@ -496,5 +580,10 @@ class DrawingCanvas : UIView{
     
     func isPhysicalHomeExist() -> Bool {
         if #available(iOS 11.0, *), let keyWindow = UIApplication.shared.keyWindow, keyWindow.safeAreaInsets.bottom > 0 { return true }; return false
+    }
+    
+    func randomString(length: Int) -> String {
+        let letters = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
+        return String((0..<length).map{ _ in letters.randomElement()! })
     }
 }

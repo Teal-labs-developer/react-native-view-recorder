@@ -15,6 +15,7 @@
 		E720A3CD23A3994300A5AD42 /* RecorderView.swift in Sources */ = {isa = PBXBuildFile; fileRef = E720A3CC23A3994300A5AD42 /* RecorderView.swift */; };
 		E720A3CF23A39A2500A5AD42 /* RNDrawView.swift in Sources */ = {isa = PBXBuildFile; fileRef = E720A3CE23A39A2500A5AD42 /* RNDrawView.swift */; };
 		E720A3D123A39A5600A5AD42 /* RNDrawView.m in Sources */ = {isa = PBXBuildFile; fileRef = E720A3D023A39A5600A5AD42 /* RNDrawView.m */; };
+		E738924623E06FD60056A24E /* MyLayer.swift in Sources */ = {isa = PBXBuildFile; fileRef = E738924523E06FD60056A24E /* MyLayer.swift */; };
 		E738979823B4B7DC006065EB /* CanvasShadow.swift in Sources */ = {isa = PBXBuildFile; fileRef = E738979723B4B7DC006065EB /* CanvasShadow.swift */; };
 		E738979B23B4E88E006065EB /* ObjC.m in Sources */ = {isa = PBXBuildFile; fileRef = E738979A23B4E88E006065EB /* ObjC.m */; };
 		E73F5A7B22F415E300094B7E /* Stroke.swift in Sources */ = {isa = PBXBuildFile; fileRef = E73F5A7A22F415E300094B7E /* Stroke.swift */; };
@@ -56,6 +57,10 @@
 		E758BBD623B0BBC400BA1CAB /* MetalPerformanceShaders.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = E758BBD323B0BBC400BA1CAB /* MetalPerformanceShaders.framework */; };
 		E758BBD723B0BBC400BA1CAB /* MetalKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = E758BBD423B0BBC400BA1CAB /* MetalKit.framework */; };
 		E758BBD823B0BBC400BA1CAB /* Metal.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = E758BBD523B0BBC400BA1CAB /* Metal.framework */; };
+		E75924E023E29EF70018E5E9 /* OrthogonalPatternsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = E75924DF23E29EF70018E5E9 /* OrthogonalPatternsView.swift */; };
+		E759255F23E2C5930018E5E9 /* RNOrthogonalPatternsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = E759255E23E2C5920018E5E9 /* RNOrthogonalPatternsView.swift */; };
+		E759256123E2C5E90018E5E9 /* RNOrthogonalPatternsView.m in Sources */ = {isa = PBXBuildFile; fileRef = E759256023E2C5E90018E5E9 /* RNOrthogonalPatternsView.m */; };
+		E759256323E2C62A0018E5E9 /* DrawUtils.swift in Sources */ = {isa = PBXBuildFile; fileRef = E759256223E2C62A0018E5E9 /* DrawUtils.swift */; };
 		E75ADEB723CB0F1D004D3AAB /* DrawHelperManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = E75ADEB623CB0F1D004D3AAB /* DrawHelperManager.swift */; };
 		E75ADEB923CB0F79004D3AAB /* DrawHelperManager.m in Sources */ = {isa = PBXBuildFile; fileRef = E75ADEB823CB0F79004D3AAB /* DrawHelperManager.m */; };
 		E79D29DC23326725000178F5 /* ATSketchTopLayer.swift in Sources */ = {isa = PBXBuildFile; fileRef = E79D29C423326724000178F5 /* ATSketchTopLayer.swift */; };
@@ -101,6 +106,7 @@
 		E720A3CC23A3994300A5AD42 /* RecorderView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RecorderView.swift; sourceTree = "<group>"; };
 		E720A3CE23A39A2500A5AD42 /* RNDrawView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RNDrawView.swift; sourceTree = "<group>"; };
 		E720A3D023A39A5600A5AD42 /* RNDrawView.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = RNDrawView.m; sourceTree = "<group>"; };
+		E738924523E06FD60056A24E /* MyLayer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MyLayer.swift; sourceTree = "<group>"; };
 		E738979723B4B7DC006065EB /* CanvasShadow.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CanvasShadow.swift; sourceTree = "<group>"; };
 		E738979923B4E875006065EB /* ObjC.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = ObjC.h; sourceTree = "<group>"; };
 		E738979A23B4E88E006065EB /* ObjC.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = ObjC.m; sourceTree = "<group>"; };
@@ -143,6 +149,10 @@
 		E758BBD323B0BBC400BA1CAB /* MetalPerformanceShaders.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = MetalPerformanceShaders.framework; path = Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.15.sdk/System/Library/Frameworks/MetalPerformanceShaders.framework; sourceTree = DEVELOPER_DIR; };
 		E758BBD423B0BBC400BA1CAB /* MetalKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = MetalKit.framework; path = Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.15.sdk/System/Library/Frameworks/MetalKit.framework; sourceTree = DEVELOPER_DIR; };
 		E758BBD523B0BBC400BA1CAB /* Metal.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Metal.framework; path = Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.15.sdk/System/Library/Frameworks/Metal.framework; sourceTree = DEVELOPER_DIR; };
+		E75924DF23E29EF70018E5E9 /* OrthogonalPatternsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OrthogonalPatternsView.swift; sourceTree = "<group>"; };
+		E759255E23E2C5920018E5E9 /* RNOrthogonalPatternsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RNOrthogonalPatternsView.swift; sourceTree = "<group>"; };
+		E759256023E2C5E90018E5E9 /* RNOrthogonalPatternsView.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = RNOrthogonalPatternsView.m; sourceTree = "<group>"; };
+		E759256223E2C62A0018E5E9 /* DrawUtils.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DrawUtils.swift; sourceTree = "<group>"; };
 		E75ADEB623CB0F1D004D3AAB /* DrawHelperManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DrawHelperManager.swift; sourceTree = "<group>"; };
 		E75ADEB823CB0F79004D3AAB /* DrawHelperManager.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DrawHelperManager.m; sourceTree = "<group>"; };
 		E79D29C423326724000178F5 /* ATSketchTopLayer.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ATSketchTopLayer.swift; sourceTree = "<group>"; };
@@ -195,6 +205,8 @@
 		58B511D21A9E6C8500147676 = {
 			isa = PBXGroup;
 			children = (
+				E75924E123E2A36C0018E5E9 /* Utils */,
+				E75924DE23E29EB90018E5E9 /* Views */,
 				E75ADEB823CB0F79004D3AAB /* DrawHelperManager.m */,
 				E75ADEB623CB0F1D004D3AAB /* DrawHelperManager.swift */,
 				E738979A23B4E88E006065EB /* ObjC.m */,
@@ -243,6 +255,7 @@
 				E758BB7723B0A78A00BA1CAB /* Canvas.swift */,
 				E758BBCE23B0B77700BA1CAB /* DrawingCanvas.swift */,
 				E738979723B4B7DC006065EB /* CanvasShadow.swift */,
+				E738924523E06FD60056A24E /* MyLayer.swift */,
 			);
 			path = Canvas;
 			sourceTree = "<group>";
@@ -315,6 +328,24 @@
 				E758BBD323B0BBC400BA1CAB /* MetalPerformanceShaders.framework */,
 			);
 			name = Frameworks;
+			sourceTree = "<group>";
+		};
+		E75924DE23E29EB90018E5E9 /* Views */ = {
+			isa = PBXGroup;
+			children = (
+				E75924DF23E29EF70018E5E9 /* OrthogonalPatternsView.swift */,
+				E759255E23E2C5920018E5E9 /* RNOrthogonalPatternsView.swift */,
+				E759256023E2C5E90018E5E9 /* RNOrthogonalPatternsView.m */,
+			);
+			path = Views;
+			sourceTree = "<group>";
+		};
+		E75924E123E2A36C0018E5E9 /* Utils */ = {
+			isa = PBXGroup;
+			children = (
+				E759256223E2C62A0018E5E9 /* DrawUtils.swift */,
+			);
+			path = Utils;
 			sourceTree = "<group>";
 		};
 		E79D29C323326706000178F5 /* New Group1 */ = {
@@ -454,17 +485,21 @@
 				E758BB5823B0A6AA00BA1CAB /* Utils.swift in Sources */,
 				E758BB3C23B0A64E00BA1CAB /* Printer.swift in Sources */,
 				E720A39423A38BB600A5AD42 /* UIImage+fill.swift in Sources */,
+				E738924623E06FD60056A24E /* MyLayer.swift in Sources */,
 				E75ADEB723CB0F1D004D3AAB /* DrawHelperManager.swift in Sources */,
 				E79D29EB23326725000178F5 /* ATUnistrokeTemplate.swift in Sources */,
 				E720A39023A38A8300A5AD42 /* DrawView1.swift in Sources */,
+				E759256123E2C5E90018E5E9 /* RNOrthogonalPatternsView.m in Sources */,
 				E71C36AD22E8798700ED63D4 /* MySwiftClass.swift in Sources */,
 				E79D29DD23326725000178F5 /* ATSketchView+Drop.swift in Sources */,
 				E79D29E423326725000178F5 /* ATSketchView+Pencil.swift in Sources */,
 				E758BBD123B0BA1E00BA1CAB /* Shaders.metal in Sources */,
 				E746C173230A9D7D00C32959 /* Brush1.swift in Sources */,
 				E758BB4F23B0A68E00BA1CAB /* Chartlet.swift in Sources */,
+				E759255F23E2C5930018E5E9 /* RNOrthogonalPatternsView.swift in Sources */,
 				E79D29E923326725000178F5 /* ATSmartBezierPath+UnistrokeRecognizer.swift in Sources */,
 				E758BB4623B0A67600BA1CAB /* DataObserver.swift in Sources */,
+				E759256323E2C62A0018E5E9 /* DrawUtils.swift in Sources */,
 				E73F5A7F22F4165000094B7E /* TouchDrawView.swift in Sources */,
 				E79D29EA23326725000178F5 /* ATRecognizedPathResult.swift in Sources */,
 				E73F5A8622F41E6B00094B7E /* RNViewRecorder.m in Sources */,
@@ -477,6 +512,7 @@
 				E79D29E323326725000178F5 /* ATSketchView+UndoRedo.swift in Sources */,
 				E73F5A7B22F415E300094B7E /* Stroke.swift in Sources */,
 				E720A3CD23A3994300A5AD42 /* RecorderView.swift in Sources */,
+				E75924E023E29EF70018E5E9 /* OrthogonalPatternsView.swift in Sources */,
 				E79D29E723326725000178F5 /* ATSketchView.swift in Sources */,
 				E758BB4423B0A67600BA1CAB /* DataImporter.swift in Sources */,
 				E738979B23B4E88E006065EB /* ObjC.m in Sources */,

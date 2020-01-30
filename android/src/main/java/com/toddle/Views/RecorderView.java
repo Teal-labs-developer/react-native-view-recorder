@@ -3,15 +3,11 @@ package com.toddle.Views;
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
-import android.graphics.Color;
 import android.graphics.Paint;
-import android.graphics.drawable.BitmapDrawable;
-import android.hardware.Camera;
 import android.net.Uri;
 import android.os.Build;
 import android.util.AttributeSet;
 import android.util.Log;
-import android.view.ViewGroup;
 import android.widget.FrameLayout;
 
 import androidx.annotation.RequiresApi;
@@ -21,7 +17,6 @@ import com.facebook.react.bridge.ReactContext;
 import com.facebook.react.bridge.WritableMap;
 import com.facebook.react.uimanager.events.RCTEventEmitter;
 import com.toddle.Recorder.Recorder;
-import com.toddle.Sketch.Stroke;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -29,8 +24,6 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
-import java.util.List;
-import java.util.ListIterator;
 
 public class RecorderView extends FrameLayout implements Recorder.RecorderListener {
 

@@ -19,7 +19,7 @@ import java.util.concurrent.Executors;
 public class VideoRecorder {
     private static final int FRAMES_PER_SECOND = 20;
 
-    public static String TAG = "VideoRecorder";
+    public static String TAG = "RecorderLib";
 
     private boolean isRecording = false;
 

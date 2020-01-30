@@ -2,6 +2,8 @@
 @interface RCT_EXTERN_MODULE(RNViewRecorder, RCTViewManager)
 
 RCT_EXPORT_VIEW_PROPERTY(imageBackgroundUri, NSString)
+RCT_EXPORT_VIEW_PROPERTY(backgroundType, NSString)
+RCT_EXPORT_VIEW_PROPERTY(backgroundColorString, NSString)
 
 
 RCT_EXTERN_METHOD(setupRecorder:(nonnull NSNumber *)node)

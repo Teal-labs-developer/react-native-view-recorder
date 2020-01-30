@@ -39,11 +39,20 @@ open class MLTexture: Hashable {
 
 public extension MTLTexture {
     
+    var context: CIContext? {
+        var context1 = CIContext() // Prepare for create CGImage
+        if(context1.description.contains("opengl")){
+            context1 = CIContext(mtlDevice: device)
+        }
+        return context1
+    }
+    
     /// get CIImage from this texture
     func toCIImage() -> CIImage? {
-        let image = CIImage(mtlTexture: self, options: [.colorSpace: CGColorSpaceCreateDeviceRGB()])
+        var image = CIImage(mtlTexture: self, options: [.colorSpace: CGColorSpaceCreateDeviceRGB()])
         
-        return image?.oriented(forExifOrientation: 4)
+//        image = image?.oriented(forExifOrientation: 4)
+        return image
     }
     
     /// get CGImage from this texture
@@ -51,15 +60,19 @@ public extension MTLTexture {
         guard let ciimage = toCIImage() else {
             return nil
         }
-       var context = CIContext() // Prepare for create CGImage
-       if(context.description.contains("opengl")){
-           context = CIContext(mtlDevice: device)
-       }
+        var context = self.context;
+        if(context == nil){
+            context = CIContext() // Prepare for create CGImage
+            if(context!.description.contains("opengl")){
+                context = CIContext(mtlDevice: device)
+            }
+        }
+       
 //        let context = CIContext(options: [.priorityRequestLow : true, .useSoftwareRenderer: false])
         // let context = CIContext(mtlDevice: device)
 //        print(context.description, CIContext().description)
         let rect = CGRect(origin: .zero, size: ciimage.extent.size)
-        return context.createCGImage(ciimage, from: rect)
+        return context!.createCGImage(ciimage, from: rect)
     }
     
     /// get UIImage from this texture

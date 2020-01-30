@@ -38,6 +38,16 @@ class RNDrawView: RCTViewManager {
         }
     }
     
+    //saveAsImage
+    @objc func saveAsImage(_ node: NSNumber){
+        DispatchQueue.main.async {                                // 2
+            let component = self.bridge.uiManager.view(             // 3
+                forReactTag: node                                     // 4
+                ) as! DrawingCanvas                                       // 5
+            component.saveAsImage()                           // 6
+        }
+    }
+    
    
     
 }

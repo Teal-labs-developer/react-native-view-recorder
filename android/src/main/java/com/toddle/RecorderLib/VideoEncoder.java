@@ -84,6 +84,9 @@ public class VideoEncoder {
     @RequiresApi(api = Build.VERSION_CODES.JELLY_BEAN_MR2)
     private void prepareEncoder() throws IOException {
         this.mBufferInfo = new MediaCodec.BufferInfo();
+
+        Log.i(TAG, "width  "+WIDTH+" height "+HEIGHT);
+
         MediaFormat mediaFormat = MediaFormat.createVideoFormat(MediaFormat.MIMETYPE_VIDEO_MPEG4, WIDTH, HEIGHT);
         mediaFormat.setInteger("color-format",MediaCodecInfo.CodecCapabilities.COLOR_FormatSurface);
         //2130708361
