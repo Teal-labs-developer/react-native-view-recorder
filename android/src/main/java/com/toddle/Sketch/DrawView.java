@@ -106,6 +106,7 @@ public class DrawView extends FrameLayout {
     protected void onSizeChanged(int w, int h, int oldw, int oldh) {
         super.onSizeChanged(w, h, oldw, oldh);
         readyCanvas(w, h);
+        refreshView(true);
     }
 
     private void readyCanvas(int w, int h){
