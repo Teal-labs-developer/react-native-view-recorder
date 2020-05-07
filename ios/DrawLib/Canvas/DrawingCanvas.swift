@@ -542,7 +542,12 @@ class DrawingCanvas : UIView, MyLayerDelegate{
     private func  registerGlowingBrush(with imageName: String, pointPath: String?) throws -> GlowingBrush{
         if(pointPath == nil || pointPath == ""){
             let existingTool = canvas?.findBrushBy(name: imageName)
-            return existingTool != nil ? existingTool! as! GlowingBrush : try canvas!.registerBrush(name: imageName)
+            if(existingTool != nil){
+                return existingTool! as! GlowingBrush;
+            }
+            else{
+                return try canvas!.registerBrush(name: imageName);
+            }
         }
         
         var data:Data?
