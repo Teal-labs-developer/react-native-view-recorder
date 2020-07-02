@@ -311,6 +311,8 @@ class DrawView: UIView {
             finishDrawing()
             currentTool = nil
         }
+
+        onEventOccured()
     }
 
     public override func touchesEnded(_ touches: Set<UITouch>, with event: UIEvent?) {
