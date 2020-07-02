@@ -361,7 +361,9 @@ public class DrawView extends FrameLayout {
         postInvalidate((int)(event.getX()-2*strokeWidth),(int)(event.getY()-2*strokeWidth)
                 ,(int)(event.getX()+2*strokeWidth),(int)(event.getY()+2*strokeWidth));
 
-        if(event.getAction() == MotionEvent.ACTION_UP || event.getAction() == MotionEvent.ACTION_DOWN){
+        if(event.getAction() == MotionEvent.ACTION_UP
+         || event.getAction() == MotionEvent.ACTION_DOWN
+         || event.getAction() == MotionEvent.ACTION_MOVE){
             onEventStackUpdated();
         }
 
