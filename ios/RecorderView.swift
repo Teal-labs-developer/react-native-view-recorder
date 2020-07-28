@@ -213,12 +213,12 @@ class RecorderView: UIView, ViewRecorderDelegate {
             
             
             // Fallback on earlier versions
-             self.layer.render(in: context)
+            //  self.layer.render(in: context)
 //        self.layer.presentation()?.render(in: context)
     //        self.layer.renderIn
             let scale = 50 / 100
-            let newRect = self.bounds.applying(CGAffineTransform(scaleX: CGFloat(scale), y: CGFloat(scale)))
-//            self.drawHierarchy(in: self.bounds, afterScreenUpdates: false)
+            // let newRect = self.bounds.applying(CGAffineTransform(scaleX: CGFloat(scale), y: CGFloat(scale)))
+           self.drawHierarchy(in: self.bounds, afterScreenUpdates: false)
             
             
             
