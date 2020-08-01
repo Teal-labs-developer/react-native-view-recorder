@@ -10,6 +10,8 @@ import android.os.Build;
 import android.util.Log;
 import android.view.Surface;
 
+import android.media.MediaCodecList;
+
 import androidx.annotation.RequiresApi;
 
 import com.toddle.Recorder.EncoderListener;
@@ -88,18 +90,29 @@ public class VideoEncoder {
         Log.i(TAG, "width  "+WIDTH+" height "+HEIGHT);
 
         MediaFormat mediaFormat = MediaFormat.createVideoFormat(MediaFormat.MIMETYPE_VIDEO_MPEG4, WIDTH, HEIGHT);
+
+        MediaCodecList sMCL = new MediaCodecList(MediaCodecList.ALL_CODECS);
+
+        String encoderName = sMCL.findEncoderForFormat(mediaFormat);
+
+         if(encoderName != null){
+            try {
+                this.mEncoder = MediaCodec.createByCodecName(encoderName);
+            } catch (IOException e) {
+            }
+        }
+        else{
+            this.mEncoder = MediaCodec.createEncoderByType(MediaFormat.MIMETYPE_VIDEO_AVC);
+            mediaFormat = MediaFormat.createVideoFormat(MediaFormat.MIMETYPE_VIDEO_AVC, WIDTH, HEIGHT);
+        }
+
         mediaFormat.setInteger("color-format",MediaCodecInfo.CodecCapabilities.COLOR_FormatSurface);
         //2130708361
-
         mediaFormat.setInteger("bitrate", WIDTH*HEIGHT*6);
         mediaFormat.setInteger("frame-rate", 20);
         mediaFormat.setFloat("i-frame-interval", 0.1f);
-        String str = TAG;
-        StringBuilder stringBuilder = new StringBuilder();
-        stringBuilder.append("format: ");
-        stringBuilder.append(mediaFormat);
-        Log.d(str, stringBuilder.toString());
-        this.mEncoder = MediaCodec.createEncoderByType(MediaFormat.MIMETYPE_VIDEO_MPEG4);
+
+        // this.mEncoder = MediaCodec.createEncoderByType(MediaFormat.MIMETYPE_VIDEO_MPEG4);
         this.mEncoder.configure(mediaFormat, null, null, MediaCodec.CONFIGURE_FLAG_ENCODE);
         this.mInputSurface = this.mEncoder.createInputSurface();
         this.mEncoder.start();
