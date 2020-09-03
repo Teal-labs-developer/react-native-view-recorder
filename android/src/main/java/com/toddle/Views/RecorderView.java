@@ -64,7 +64,7 @@ public class RecorderView extends FrameLayout implements Recorder.RecorderListen
     private  File getOutputMediaFile(){
         // To be safe, you should check that the SDCard is mounted
         // using Environment.getExternalStorageState() before doing this.
-        File mediaStorageDir = getContext().getCacheDir();
+        File mediaStorageDir = getContext().getDataDir();
 
         // This location works best if you want the created images to be shared
         // between applications and persist after your app has been uninstalled.
@@ -78,7 +78,7 @@ public class RecorderView extends FrameLayout implements Recorder.RecorderListen
         // Create a media file name
         String timeStamp = new SimpleDateFormat("ddMMyyyy_HHmmss.SSS").format(new Date());
         File mediaFile;
-        String mImageName="MI_"+ timeStamp +".jpg";
+        String mImageName="Sketch_"+ timeStamp +".jpg";
         mediaFile = new File(mediaStorageDir.getPath() + File.separator + mImageName);
         return mediaFile;
     }

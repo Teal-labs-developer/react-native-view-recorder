@@ -47,7 +47,7 @@ public class Recorder implements EncoderListener {
     @RequiresApi(api = Build.VERSION_CODES.JELLY_BEAN_MR2)
     public Recorder(RecorderListener listener) {
         this.listener = listener;
-        File file = listener.getContext().getCacheDir();
+        File file = listener.getContext().getDataDir();
         String fileName = "drawing-"+System.currentTimeMillis()+".mp4";
 
         this.outputFile = new File(file, fileName);
