@@ -50,7 +50,7 @@ public class Recorder implements EncoderListener {
         String dirPath = listener.getContext().getApplicationInfo().dataDir;
         String fileName = "drawing-"+System.currentTimeMillis()+".mp4";
 
-        this.outputFile = new File(dirPath + File.separator + fileName;
+        this.outputFile = new File(dirPath + File.separator + fileName);
         this.state = RECORDING_STATES.STOPPED;
         try {
             this.muxer = new MediaMuxer(this.outputFile.getAbsolutePath(), MediaMuxer.OutputFormat.MUXER_OUTPUT_MPEG_4);
