@@ -70,11 +70,11 @@ public class RecorderView extends FrameLayout implements Recorder.RecorderListen
         // between applications and persist after your app has been uninstalled.
 
         // Create the storage directory if it does not exist
-        if (! mediaStorageDir.exists()){
-            if (! mediaStorageDir.mkdirs()){
-                return null;
-            }
-        }
+        // if (! mediaStorageDir.exists()){
+        //     if (! mediaStorageDir.mkdirs()){
+        //         return null;
+        //     }
+        // }
         // Create a media file name
         String timeStamp = new SimpleDateFormat("ddMMyyyy_HHmmss.SSS").format(new Date());
         File mediaFile;
