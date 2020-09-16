@@ -47,10 +47,10 @@ public class Recorder implements EncoderListener {
     @RequiresApi(api = Build.VERSION_CODES.JELLY_BEAN_MR2)
     public Recorder(RecorderListener listener) {
         this.listener = listener;
-        File file = listener.getContext().getDataDir();
+        String dirPath = listener.getContext().getApplicationInfo().dataDir;
         String fileName = "drawing-"+System.currentTimeMillis()+".mp4";
 
-        this.outputFile = new File(file, fileName);
+        this.outputFile = new File(dirPath + File.separator + fileName;
         this.state = RECORDING_STATES.STOPPED;
         try {
             this.muxer = new MediaMuxer(this.outputFile.getAbsolutePath(), MediaMuxer.OutputFormat.MUXER_OUTPUT_MPEG_4);
