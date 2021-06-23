@@ -10,6 +10,8 @@ import com.facebook.react.bridge.NativeModule;
 import com.facebook.react.bridge.ReactApplicationContext;
 import com.facebook.react.uimanager.ViewManager;
 import com.facebook.react.bridge.JavaScriptModule;
+import com.toddle.Views.OrthogonalPatternsViewManager;
+
 public class RNViewRecorderPackage implements ReactPackage {
     @Override
     public List<NativeModule> createNativeModules(ReactApplicationContext reactContext) {
@@ -26,7 +28,11 @@ public class RNViewRecorderPackage implements ReactPackage {
     @Override
     public List<ViewManager> createViewManagers(ReactApplicationContext reactContext) {
         return Arrays.<ViewManager>asList(
-                new ReactDrawViewManager()
+                new ReactDrawViewManager(),
+                new ReactRecorderViewManager(),
+                new OrthogonalPatternsViewManager()
         );
     }
+
+
 }

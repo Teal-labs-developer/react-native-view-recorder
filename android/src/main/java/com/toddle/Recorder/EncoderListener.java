@@ -22,4 +22,8 @@ public interface EncoderListener {
     void runOnUiThread(Runnable runnable);
 
     void onRecorded();
+
+    long getPresentationTimeUs();
+
+    void setPresentationTimeUs(long presentationTimeUs);
 }

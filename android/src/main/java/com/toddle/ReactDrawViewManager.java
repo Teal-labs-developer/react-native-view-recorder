@@ -20,7 +20,7 @@ import androidx.annotation.Nullable;
 
 public class ReactDrawViewManager extends SimpleViewManager<DrawView> {
 
-    public static final String REACT_CLASS = "RNViewRecorder";
+    public static final String REACT_CLASS = "RNDrawView";
 
     public static final int COMMAND_SAVE_IMAGE = 1;
 
@@ -61,15 +61,18 @@ public class ReactDrawViewManager extends SimpleViewManager<DrawView> {
         view.setStrokeWidth(brushWidth);
     }
 
+    @ReactProp(name = "drawingTool")
+    public void setDrawingTool(DrawView view, @Nullable String colorString) {
+        view.setDrawingTool(colorString);
+    }
+
     @ReactProp(name = "colorString")
     public void setColorString(DrawView view, @Nullable String colorString) {
         view.setColor(colorString);
     }
 
-    //imageBackgroundUri
-    @ReactProp(name = "imageBackgroundUri")
-    public void setImageBackgroundUri(DrawView view, @Nullable String uri) {
-        view.setBackgroundImage(uri);
+    @ReactProp(name = "opacity")
+    public void setOpacity(DrawView view, @Nullable float opacity) {
     }
 
 
@@ -121,14 +124,6 @@ public class ReactDrawViewManager extends SimpleViewManager<DrawView> {
 //                view.saveImage();
                 return;
             }
-            case START_RECORDING: {
-                view.startRecording();
-                return;
-            }
-            case STOP_RECORDING: {
-                view.stopRecording();
-                return;
-            }
             case RESET_CANVAS: {
                 view.clearCanvas();
                 return;
@@ -139,10 +134,6 @@ public class ReactDrawViewManager extends SimpleViewManager<DrawView> {
             }
             case REDO:{
                 view.redo();
-                return;
-            }
-            case SAVE_AS_IMAGE:{
-                view.saveAsImage();
                 return;
             }
 

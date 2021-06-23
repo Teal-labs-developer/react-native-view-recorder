@@ -2,6 +2,7 @@ package com.toddle.Recorder;
 
 import android.content.Context;
 import android.media.MediaCodec;
+import android.media.MediaCodecInfo;
 import android.media.MediaFormat;
 import android.os.Environment;
 import android.util.Log;
@@ -219,13 +220,15 @@ public class AudioEncoder2 {
         new File(file, stringBuilder.toString());
         this.mAudioBufferInfo = new MediaCodec.BufferInfo();
         this.audioFormat = new MediaFormat();
-        this.audioFormat.setString("mime", "audio/mp4a-latm");
+        this.audioFormat.setString("mime", MediaFormat.MIMETYPE_AUDIO_AAC);
         this.audioFormat.setInteger("aac-profile", 2);
         this.audioFormat.setInteger("sample-rate", 44100);
         this.audioFormat.setInteger("channel-count", 1);
         this.audioFormat.setInteger("bitrate", 128000);
         this.audioFormat.setInteger("max-input-size", 16384);
-        this.mAudioEncoder = MediaCodec.createEncoderByType("audio/mp4a-latm");
+        this.audioFormat.setInteger(MediaFormat.KEY_AAC_PROFILE,
+                MediaCodecInfo.CodecProfileLevel.AACObjectLC);
+        this.mAudioEncoder = MediaCodec.createEncoderByType(MediaFormat.MIMETYPE_AUDIO_AAC);
         this.mAudioEncoder.configure(this.audioFormat, null, null, MediaCodec.CONFIGURE_FLAG_ENCODE);
         this.mAudioEncoder.start();
     }

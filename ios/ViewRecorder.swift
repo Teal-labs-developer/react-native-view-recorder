@@ -11,12 +11,18 @@ import UIKit
 import AVFoundation
 import Foundation
 
-class ViewRecorder:NSObject, AVCaptureAudioDataOutputSampleBufferDelegate{
+@objc public protocol ViewRecorderDelegate: NSObjectProtocol  {
+    func onRecordedLocal(_ view: ViewRecorder, result:Dictionary<String, Any>)
+    func getImage(_ view: ViewRecorder, context:CGContext)
+}
+
+
+
+public class ViewRecorder:NSObject, AVCaptureAudioDataOutputSampleBufferDelegate{
 
     var isRecording:Bool = false;
     var image:UIImage?
     var frame:CGRect?
-    var drawView: DrawView?
 
     var captureSession:AVCaptureSession?
     var audioConnection:AVCaptureConnection?
@@ -29,9 +35,11 @@ class ViewRecorder:NSObject, AVCaptureAudioDataOutputSampleBufferDelegate{
     var videoWriterInput:AVAssetWriterInput?
 
     var setupDone:Bool?
+    
+    var delegate:ViewRecorderDelegate?
 
 
-    func captureOutput(_ output: AVCaptureOutput, didOutput sampleBuffer: CMSampleBuffer, from connection: AVCaptureConnection) {
+    public func captureOutput(_ output: AVCaptureOutput, didOutput sampleBuffer: CMSampleBuffer, from connection: AVCaptureConnection) {
 
 
         if(connection == audioConnection && audioWriterInput != nil && (audioWriterInput?.isReadyForMoreMediaData)! && isRecording && assetWriter?.status == AVAssetWriter.Status.writing){
@@ -50,10 +58,9 @@ class ViewRecorder:NSObject, AVCaptureAudioDataOutputSampleBufferDelegate{
         self.image = image
     }
 
-    init(frame: CGRect, drawView: DrawView) {
+    init(frame: CGRect) {
         super.init()
         self.frame = frame
-        self.drawView = drawView
     }
 
 
@@ -168,7 +175,7 @@ class ViewRecorder:NSObject, AVCaptureAudioDataOutputSampleBufferDelegate{
 
     private func startWritingSession(){
         assetWriter?.startWriting()
-        let startingTimeDelay = CMTimeMakeWithSeconds(0.5, preferredTimescale: 1000)
+        let startingTimeDelay = CMTimeMakeWithSeconds(1, preferredTimescale: 1000)
 
         assetWriter?.startSession(atSourceTime: CMTimeAdd(CMTimeMakeWithSeconds(CACurrentMediaTime(), preferredTimescale: 1000), startingTimeDelay))
         captureSession?.startRunning()
@@ -192,16 +199,33 @@ class ViewRecorder:NSObject, AVCaptureAudioDataOutputSampleBufferDelegate{
         isRecording = false
         if let list = assetWriter?.inputs {
             for i in 0 ..< list.count {
-                assetWriter?.inputs[i].markAsFinished()
+                do{
+                    try ObjC.catchException{
+                        self.assetWriter?.inputs[i].markAsFinished()
+                    }
+                }
+                catch{
+                    
+                }
             }
 
-            assetWriter?.finishWriting(completionHandler: {
-                NSLog("recording Video is created")
-                print("recording ",self.assetWriter?.outputURL)
-                self.drawView?.onRecordedLocal(result: ["uri":(self.assetWriter?.outputURL.absoluteString)!,  "path":(self.assetWriter?.outputURL.path)!])
+            do{
+                try ObjC.catchException{
+                    self.assetWriter?.finishWriting(completionHandler: {
+                        NSLog("recording Video is created")
+                        print("recording ",self.assetWriter?.outputURL)
+                        self.delegate?.onRecordedLocal(self, result: ["uri":(self.assetWriter?.outputURL.absoluteString)!,  "path":(self.assetWriter?.outputURL.path)!])
+                        self.isRecording = false
+                    })
+                    self.captureSession?.stopRunning();
+                }
+            }
+            catch{
+                self.delegate?.onRecordedLocal(self, result: ["uri":(self.assetWriter?.outputURL.absoluteString)!,  "path":(self.assetWriter?.outputURL.path)!])
                 self.isRecording = false
-            })
-            captureSession?.stopRunning();
+                captureSession?.stopRunning();
+            }
+            
         }
 
 
@@ -263,16 +287,21 @@ class ViewRecorder:NSObject, AVCaptureAudioDataOutputSampleBufferDelegate{
 
 
         let context:CGContext = CGContext(data: pxData, width: contextWidth, height: contextHeight, bitsPerComponent: 8, bytesPerRow: bytesPerRow, space:CGColorSpaceCreateDeviceRGB(), bitmapInfo: CGImageAlphaInfo.noneSkipFirst.rawValue)!
+        
+        context.setFillColor(UIColor.white.cgColor)
+        context.fill(CGRect(x: 0, y: 0, width: contextWidth, height: contextHeight))
 
         let transform:CGAffineTransform = __CGAffineTransformMake(1, 0, 0, -1, 0, frame!.height)
 
         context.concatenate(transform)
 
 
-        DispatchQueue.main.sync {
+//        DispatchQueue.main.sync {
             // Update the UI
-            self.drawView?.getImage(context: context);
-        }
+        autoreleasepool {
+               self.delegate?.getImage(self, context: context);
+            }
+//        }
 
         CVPixelBufferUnlockBaseAddress(imageBuffer.pointee!,[])
     }

@@ -4,12 +4,18 @@ import android.graphics.Canvas;
 import android.graphics.Paint;
 import android.graphics.Rect;
 import android.media.MediaCodec;
+import android.media.MediaCodecInfo;
 import android.media.MediaFormat;
+import android.os.Build;
 import android.util.Log;
 import android.view.Surface;
 
+import android.media.MediaCodecList;
+
+import androidx.annotation.RequiresApi;
+
 import com.toddle.Recorder.EncoderListener;
-import com.toddle.Sketch.DrawView;
+import com.toddle.Recorder.Recorder;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
@@ -34,7 +40,7 @@ public class VideoEncoder {
 
     private static int WIDTH = 1280;
 
-    private DrawView drawView;
+    private Recorder.RecorderListener listener;
 
     private EncoderListener encoderListener;
 
@@ -56,33 +62,64 @@ public class VideoEncoder {
         HEIGHT = 960;
     }
 
-    public VideoEncoder(EncoderListener paramEncoderListener, DrawView paramDrawView) throws IOException {
+    @RequiresApi(api = Build.VERSION_CODES.JELLY_BEAN_MR2)
+    public VideoEncoder(EncoderListener paramEncoderListener, Recorder.RecorderListener listener) throws IOException {
         this.encoderListener = paramEncoderListener;
-        this.drawView = paramDrawView;
-        WIDTH = paramDrawView.getWidth();
-        HEIGHT = paramDrawView.getHeight();
+        this.listener = listener;
+        WIDTH = listener.getCanvasWidth();
+        HEIGHT = listener.getCanvasHeight();
         prepareEncoder();
     }
 
+    /*
+    * 640×480-, 800×600-, 960×720-, 1024×768-, 1280×960-, 1400-×1050-, 1440-×1080-, 1600×1200-, 1856×1392, 1920×1440,
+    *  2048×1536.
+16:10 aspect ratio resolutions: 1280×800, 1440×900, 1680×1050, 1920×1200, and 2560×1600.
+16:9 aspect ratio resolutions: 1024×576, 1152×648, 1280×720, 1366×768, 1600×900,
+*  1920×1080, 2560×1440, 3840×2160 7680 x 4320
+*
+* 480-, 640-, 720-, 1024-, 1280-, 1440-, 1920, 2048, 2160, 2560, 3840, 4320,
+*
+    * */
+
+
+    @RequiresApi(api = Build.VERSION_CODES.JELLY_BEAN_MR2)
     private void prepareEncoder() throws IOException {
         this.mBufferInfo = new MediaCodec.BufferInfo();
-        MediaFormat mediaFormat = MediaFormat.createVideoFormat("video/mp4v-es", WIDTH, HEIGHT);
-        mediaFormat.setInteger("color-format", 2130708361);
-        mediaFormat.setInteger("bitrate", 300000);
+
+        Log.i(TAG, "width  "+WIDTH+" height "+HEIGHT);
+
+        MediaFormat mediaFormat = MediaFormat.createVideoFormat(MediaFormat.MIMETYPE_VIDEO_MPEG4, WIDTH, HEIGHT);
+
+        MediaCodecList sMCL = new MediaCodecList(MediaCodecList.ALL_CODECS);
+
+        String encoderName = sMCL.findEncoderForFormat(mediaFormat);
+
+         if(encoderName != null){
+            try {
+                this.mEncoder = MediaCodec.createByCodecName(encoderName);
+            } catch (IOException e) {
+            }
+        }
+        else{
+            this.mEncoder = MediaCodec.createEncoderByType(MediaFormat.MIMETYPE_VIDEO_AVC);
+            mediaFormat = MediaFormat.createVideoFormat(MediaFormat.MIMETYPE_VIDEO_AVC, WIDTH, HEIGHT);
+        }
+
+        mediaFormat.setInteger("color-format",MediaCodecInfo.CodecCapabilities.COLOR_FormatSurface);
+        //2130708361
+        mediaFormat.setInteger("bitrate", WIDTH*HEIGHT*6);
         mediaFormat.setInteger("frame-rate", 20);
-        mediaFormat.setFloat("i-frame-interval", 0.1F);
-        String str = TAG;
-        StringBuilder stringBuilder = new StringBuilder();
-        stringBuilder.append("format: ");
-        stringBuilder.append(mediaFormat);
-        Log.d(str, stringBuilder.toString());
-        this.mEncoder = MediaCodec.createEncoderByType("video/mp4v-es");
+        mediaFormat.setFloat("i-frame-interval", 0.1f);
+
+        // this.mEncoder = MediaCodec.createEncoderByType(MediaFormat.MIMETYPE_VIDEO_MPEG4);
         this.mEncoder.configure(mediaFormat, null, null, MediaCodec.CONFIGURE_FLAG_ENCODE);
         this.mInputSurface = this.mEncoder.createInputSurface();
         this.mEncoder.start();
         this.mTrackIndex = -1;
     }
 
+    @RequiresApi(api = Build.VERSION_CODES.JELLY_BEAN_MR2)
     public void drainEncoder(boolean endOfStream) {
         final int TIMEOUT_USEC = 10000;
         if (VERBOSE) Log.d(TAG, "drainEncoder(" + endOfStream + ")");
@@ -108,15 +145,17 @@ public class VideoEncoder {
             } else if (encoderStatus == MediaCodec.INFO_OUTPUT_FORMAT_CHANGED) {
                 // should happen before receiving buffers, and should only happen once
                 if (mMuxerStarted) {
-                    throw new RuntimeException("format changed twice");
+//                    throw new RuntimeException("format changed twice");
                 }
-                MediaFormat newFormat = mEncoder.getOutputFormat();
-                Log.d(TAG, "encoder output format changed: " + newFormat);
+                else{
+                    MediaFormat newFormat = mEncoder.getOutputFormat();
+                    Log.d(TAG, "encoder output format changed: " + newFormat);
 
-                // now that we have the Magic Goodies, start the muxer
-                mTrackIndex = encoderListener.addTrackToMuxer(newFormat);
-                encoderListener.startMuxer();
-                mMuxerStarted = true;
+                    // now that we have the Magic Goodies, start the muxer
+                    mTrackIndex = encoderListener.addTrackToMuxer(newFormat);
+                    encoderListener.startMuxer();
+                    mMuxerStarted = true;
+                }
             } else if (encoderStatus < 0) {
                 Log.w(TAG, "unexpected result from encoder.dequeueOutputBuffer: " +
                         encoderStatus);
@@ -149,6 +188,7 @@ public class VideoEncoder {
                     }
 
                     mFakePts = System.currentTimeMillis() * 1000 - startTimeMicro;
+                    encoderListener.setPresentationTimeUs(mFakePts);
 
                     mBufferInfo.presentationTimeUs = mFakePts;
 //                    mFakePts += 1000000L / FRAMES_PER_SECOND;
@@ -184,12 +224,13 @@ public class VideoEncoder {
 
         try{
 
-            drawView.drawOnCanvas(canvas);
+            listener.drawOnCanvas(canvas, false);
         }finally {
             mInputSurface.unlockCanvasAndPost(canvas);
         }
     }
 
+    @RequiresApi(api = Build.VERSION_CODES.JELLY_BEAN)
     void releaseEncoder() throws IOException {
         Log.d(TAG, "releasing encoder objects");
         MediaCodec mediaCodec = this.mEncoder;

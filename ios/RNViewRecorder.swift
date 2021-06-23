@@ -1,7 +1,12 @@
 @objc(RNViewRecorder)
 class RNViewRecorder: RCTViewManager {
-    override func view() -> DrawView! {
-        let drawView = DrawView();
+    override func view() -> RecorderView! {
+        let drawView = RecorderView();
+        
+//        let frameworkBundle = Bundle(for: DrawView.self)
+//        guard let defaultLibrary = try? sharedDevice?.makeDefaultLibrary(bundle: frameworkBundle) else {
+//            fatalError("Could not load default library from specified bundle")
+//        }
         
         return drawView;
     }
@@ -10,22 +15,11 @@ class RNViewRecorder: RCTViewManager {
         return true
     }
     
-    // 1
-    @objc func updateFromManager(_ node: NSNumber, count: NSNumber) {
-        
-        DispatchQueue.main.async {                                // 2
-            let component = self.bridge.uiManager.view(             // 3
-                forReactTag: node                                     // 4
-                ) as! DrawView                                       // 5
-            component.demoStartRecord(value: count)                          // 6
-        }
-    }
-    
     @objc func setupRecorder(_ node: NSNumber){
         DispatchQueue.main.async {                                // 2
             let component = self.bridge.uiManager.view(             // 3
                 forReactTag: node                                     // 4
-                ) as! DrawView                                       // 5
+                ) as! RecorderView                                       // 5
             component.setupRecorder()                          // 6
         }
     }
@@ -34,7 +28,7 @@ class RNViewRecorder: RCTViewManager {
         DispatchQueue.main.async {                                // 2
             let component = self.bridge.uiManager.view(             // 3
                 forReactTag: node                                     // 4
-                ) as! DrawView                                       // 5
+                ) as! RecorderView                                       // 5
             component.startRecording()                          // 6
         }
     }
@@ -43,44 +37,20 @@ class RNViewRecorder: RCTViewManager {
         DispatchQueue.main.async {                                // 2
             let component = self.bridge.uiManager.view(             // 3
                 forReactTag: node                                     // 4
-                ) as! DrawView                                       // 5
+                ) as! RecorderView                                       // 5
             component.stopRecording()                          // 6
         }
     }
+  
     
-    @objc func resetCanvas(_ node: NSNumber){
-        DispatchQueue.main.async {                                // 2
-            let component = self.bridge.uiManager.view(             // 3
-                forReactTag: node                                     // 4
-                ) as! DrawView                                       // 5
-            component.resetCanvas()                           // 6
-        }
-    }
-    
-    @objc func undo(_ node: NSNumber){
-        DispatchQueue.main.async {                                // 2
-            let component = self.bridge.uiManager.view(             // 3
-                forReactTag: node                                     // 4
-                ) as! DrawView                                       // 5
-            component.undo()                           // 6
-        }
-    }
-    
-    @objc func redo(_ node: NSNumber){
-        DispatchQueue.main.async {                                // 2
-            let component = self.bridge.uiManager.view(             // 3
-                forReactTag: node                                     // 4
-                ) as! DrawView                                       // 5
-            component.redo()                           // 6
-        }
-    }
+   
     
     //saveAsImage
     @objc func saveAsImage(_ node: NSNumber){
         DispatchQueue.main.async {                                // 2
             let component = self.bridge.uiManager.view(             // 3
                 forReactTag: node                                     // 4
-                ) as! DrawView                                       // 5
+                ) as! RecorderView                                       // 5
             component.saveAsImage()                           // 6
         }
     }
