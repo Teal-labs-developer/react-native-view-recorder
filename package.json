@@ -1,7 +1,7 @@
 {
   "name": "react-native-view-recorder",
   "version": "0.0.2",
-  "description": "",
+  "description": "The react-native-view-recorder is a react native library that allows you to record a view to a video file for ios",
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
