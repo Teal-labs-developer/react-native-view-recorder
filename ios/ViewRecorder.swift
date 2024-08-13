@@ -20,7 +20,7 @@ import Foundation
 
 public class ViewRecorder:NSObject, AVCaptureAudioDataOutputSampleBufferDelegate{
 
-    var isRecording:Bool = false;
+    var isRecording:String = "STOPPED";
     var image:UIImage?
     var frame:CGRect?
 
@@ -42,7 +42,7 @@ public class ViewRecorder:NSObject, AVCaptureAudioDataOutputSampleBufferDelegate
     public func captureOutput(_ output: AVCaptureOutput, didOutput sampleBuffer: CMSampleBuffer, from connection: AVCaptureConnection) {
 
 
-        if(connection == audioConnection && audioWriterInput != nil && (audioWriterInput?.isReadyForMoreMediaData)! && isRecording && assetWriter?.status == AVAssetWriter.Status.writing){
+        if(connection == audioConnection && audioWriterInput != nil && (audioWriterInput?.isReadyForMoreMediaData)! && isRecording == "RECORDING" && assetWriter?.status == AVAssetWriter.Status.writing){
             do{
                 var appended = try audioWriterInput!.append(sampleBuffer)
             }
@@ -163,7 +163,8 @@ public class ViewRecorder:NSObject, AVCaptureAudioDataOutputSampleBufferDelegate
 
 
     public func setupRecorder(){
-        self.setupMicSession()
+        // Removed to run on local server
+        // self.setupMicSession()
         self.setupInputs()
 
         setupDone = true;
@@ -182,10 +183,10 @@ public class ViewRecorder:NSObject, AVCaptureAudioDataOutputSampleBufferDelegate
     }
 
     func startRecording(){
-        if(!isRecording){
+        if(isRecording == "STOPPED"){
             print("start Recording")
 
-            isRecording = true
+            isRecording = "RECORDING";
             let backgroundDispatch:DispatchQueue =  DispatchQueue.global(qos: .userInitiated)
 
             backgroundDispatch.async {
@@ -196,7 +197,7 @@ public class ViewRecorder:NSObject, AVCaptureAudioDataOutputSampleBufferDelegate
 
     func stopRecording(){
         print("stop Recording")
-        isRecording = false
+        isRecording = "STOPPED";
         if let list = assetWriter?.inputs {
             for i in 0 ..< list.count {
                 do{
@@ -215,14 +216,14 @@ public class ViewRecorder:NSObject, AVCaptureAudioDataOutputSampleBufferDelegate
                         NSLog("recording Video is created")
                         print("recording ",self.assetWriter?.outputURL)
                         self.delegate?.onRecordedLocal(self, result: ["uri":(self.assetWriter?.outputURL.absoluteString)!,  "path":(self.assetWriter?.outputURL.path)!])
-                        self.isRecording = false
+                        self.isRecording = "STOPPED";
                     })
                     self.captureSession?.stopRunning();
                 }
             }
             catch{
                 self.delegate?.onRecordedLocal(self, result: ["uri":(self.assetWriter?.outputURL.absoluteString)!,  "path":(self.assetWriter?.outputURL.path)!])
-                self.isRecording = false
+                self.isRecording = "STOPPED";
                 captureSession?.stopRunning();
             }
             
@@ -233,6 +234,14 @@ public class ViewRecorder:NSObject, AVCaptureAudioDataOutputSampleBufferDelegate
 
     }
 
+    func pauseRecording() {
+        if (isRecording == "RECORDING") {
+            self.isRecording = "PAUSED";
+        } else {
+            self.isRecording = "RECORDING";
+        }
+    }
+
 
     func recordView(backgroundDispatch:DispatchQueue){
         if(!setupDone!){
@@ -241,7 +250,7 @@ public class ViewRecorder:NSObject, AVCaptureAudioDataOutputSampleBufferDelegate
         self.startWritingSession()
         var i:Int = 0
 
-        while(isRecording){
+        while(isRecording == "RECORDING" || isRecording == "PAUSED"){
             if(!adapter!.assetWriterInput.isReadyForMoreMediaData){
 //                print("not ready for data")
             }
@@ -251,7 +260,7 @@ public class ViewRecorder:NSObject, AVCaptureAudioDataOutputSampleBufferDelegate
                 self.newPixelBufferFromCGImage(imageBuffer:&imageBuffer, backgroundDispatch: backgroundDispatch)
 
                 do{
-                    if(assetWriter?.status == AVAssetWriter.Status.writing && isRecording){
+                    if(assetWriter?.status == AVAssetWriter.Status.writing && isRecording == "RECORDING"){
                         let appended = try adapter!.append(imageBuffer!, withPresentationTime: time)
                         i = i+1;
                     }

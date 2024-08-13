@@ -63,6 +63,12 @@ class RecorderView: UIView, ViewRecorderDelegate {
             viewRecorder.stopRecording()
         }
     }
+
+    @objc func pauseRecording(){
+        if(viewRecorder != nil){
+            viewRecorder.pauseRecording()
+        }
+    }
     
     public func onRecordedLocal(result:Dictionary<String, Any>){
         print("onRecordedLocal ",result)
