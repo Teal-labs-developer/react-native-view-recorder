@@ -10,6 +10,7 @@ RCT_EXTERN_METHOD(setupRecorder:(nonnull NSNumber *)node)
 RCT_EXTERN_METHOD(startRecording:(nonnull NSNumber *)node)
 RCT_EXTERN_METHOD(stopRecording:(nonnull NSNumber *)node)
 RCT_EXTERN_METHOD(pauseRecording:(nonnull NSNumber *)node)
+RCT_EXTERN_METHOD(stopRecordingV2:(nonnull NSNumber *)node)
 RCT_EXTERN_METHOD(saveAsImage:(nonnull NSNumber *)node)
 
 

@@ -13,6 +13,7 @@ import Foundation
 
 @objc public protocol ViewRecorderDelegate: NSObjectProtocol  {
     func onRecordedLocal(_ view: ViewRecorder, result:Dictionary<String, Any>)
+    func storeVideoURL(_ view: ViewRecorder, result: Dictionary<String, Any>, completion: @escaping () -> Void)
     func getImage(_ view: ViewRecorder, context:CGContext)
 }
 
@@ -20,7 +21,7 @@ import Foundation
 
 public class ViewRecorder:NSObject, AVCaptureAudioDataOutputSampleBufferDelegate{
 
-    var isRecording:String = "STOPPED";
+    var isRecording:Bool = false;
     var image:UIImage?
     var frame:CGRect?
 
@@ -42,7 +43,7 @@ public class ViewRecorder:NSObject, AVCaptureAudioDataOutputSampleBufferDelegate
     public func captureOutput(_ output: AVCaptureOutput, didOutput sampleBuffer: CMSampleBuffer, from connection: AVCaptureConnection) {
 
 
-        if(connection == audioConnection && audioWriterInput != nil && (audioWriterInput?.isReadyForMoreMediaData)! && isRecording == "RECORDING" && assetWriter?.status == AVAssetWriter.Status.writing){
+        if(connection == audioConnection && audioWriterInput != nil && (audioWriterInput?.isReadyForMoreMediaData)! && isRecording && assetWriter?.status == AVAssetWriter.Status.writing){
             do{
                 var appended = try audioWriterInput!.append(sampleBuffer)
             }
@@ -163,8 +164,7 @@ public class ViewRecorder:NSObject, AVCaptureAudioDataOutputSampleBufferDelegate
 
 
     public func setupRecorder(){
-        // Removed to run on local server
-        // self.setupMicSession()
+        self.setupMicSession()
         self.setupInputs()
 
         setupDone = true;
@@ -176,17 +176,17 @@ public class ViewRecorder:NSObject, AVCaptureAudioDataOutputSampleBufferDelegate
 
     private func startWritingSession(){
         assetWriter?.startWriting()
-        let startingTimeDelay = CMTimeMakeWithSeconds(1, preferredTimescale: 1000)
+        let startingTimeDelay = CMTimeMakeWithSeconds(0, preferredTimescale: 1000)
 
         assetWriter?.startSession(atSourceTime: CMTimeAdd(CMTimeMakeWithSeconds(CACurrentMediaTime(), preferredTimescale: 1000), startingTimeDelay))
         captureSession?.startRunning()
     }
 
     func startRecording(){
-        if(isRecording == "STOPPED"){
+        if(!isRecording){
             print("start Recording")
 
-            isRecording = "RECORDING";
+            isRecording = true
             let backgroundDispatch:DispatchQueue =  DispatchQueue.global(qos: .userInitiated)
 
             backgroundDispatch.async {
@@ -197,7 +197,7 @@ public class ViewRecorder:NSObject, AVCaptureAudioDataOutputSampleBufferDelegate
 
     func stopRecording(){
         print("stop Recording")
-        isRecording = "STOPPED";
+        isRecording = false
         if let list = assetWriter?.inputs {
             for i in 0 ..< list.count {
                 do{
@@ -216,29 +216,48 @@ public class ViewRecorder:NSObject, AVCaptureAudioDataOutputSampleBufferDelegate
                         NSLog("recording Video is created")
                         print("recording ",self.assetWriter?.outputURL)
                         self.delegate?.onRecordedLocal(self, result: ["uri":(self.assetWriter?.outputURL.absoluteString)!,  "path":(self.assetWriter?.outputURL.path)!])
-                        self.isRecording = "STOPPED";
+                        self.isRecording = false
                     })
                     self.captureSession?.stopRunning();
                 }
             }
             catch{
                 self.delegate?.onRecordedLocal(self, result: ["uri":(self.assetWriter?.outputURL.absoluteString)!,  "path":(self.assetWriter?.outputURL.path)!])
-                self.isRecording = "STOPPED";
+                self.isRecording = false
                 captureSession?.stopRunning();
             }
-            
         }
-
-
-
-
     }
 
-    func pauseRecording() {
-        if (isRecording == "RECORDING") {
-            self.isRecording = "PAUSED";
-        } else {
-            self.isRecording = "RECORDING";
+    func createScreenRecording(completion: (() -> Void)? = nil){
+        if let list = assetWriter?.inputs {
+            for i in 0 ..< list.count {
+                do{
+                    try ObjC.catchException{
+                        self.assetWriter?.inputs[i].markAsFinished()
+                    }
+                }
+                catch{}
+            }
+
+            do{
+                try ObjC.catchException{
+                    self.assetWriter?.finishWriting(completionHandler: {
+                        self.delegate?.storeVideoURL(self, result: ["uri":(self.assetWriter?.outputURL.absoluteString)!]) {
+                            completion?()
+                        }
+                        self.isRecording = false
+                    })
+                    self.captureSession?.stopRunning();
+                }
+            }
+            catch{
+                self.delegate?.storeVideoURL(self, result: ["uri":(self.assetWriter?.outputURL.absoluteString)!]) {
+                    completion?()
+                }
+                self.isRecording = false
+                captureSession?.stopRunning();
+            }
         }
     }
 
@@ -250,7 +269,7 @@ public class ViewRecorder:NSObject, AVCaptureAudioDataOutputSampleBufferDelegate
         self.startWritingSession()
         var i:Int = 0
 
-        while(isRecording == "RECORDING" || isRecording == "PAUSED"){
+        while(isRecording){
             if(!adapter!.assetWriterInput.isReadyForMoreMediaData){
 //                print("not ready for data")
             }
@@ -260,7 +279,7 @@ public class ViewRecorder:NSObject, AVCaptureAudioDataOutputSampleBufferDelegate
                 self.newPixelBufferFromCGImage(imageBuffer:&imageBuffer, backgroundDispatch: backgroundDispatch)
 
                 do{
-                    if(assetWriter?.status == AVAssetWriter.Status.writing && isRecording == "RECORDING"){
+                    if(assetWriter?.status == AVAssetWriter.Status.writing && isRecording){
                         let appended = try adapter!.append(imageBuffer!, withPresentationTime: time)
                         i = i+1;
                     }

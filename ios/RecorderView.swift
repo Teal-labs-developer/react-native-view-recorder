@@ -9,9 +9,17 @@
 import UIKit
 import Photos
 import MetalKit
+import Foundation
+import AVKit
+
 class RecorderView: UIView, ViewRecorderDelegate {
     func onRecordedLocal(_ view: ViewRecorder, result: Dictionary<String, Any>) {
         self.onRecordedLocal(result: result);
+    }
+    
+    func storeVideoURL(_ view: ViewRecorder, result: Dictionary<String, Any>, completion: @escaping () -> Void) {
+        self.storeVideoURL(result: result)
+        completion()
     }
     
     func getImage(_ view: ViewRecorder, context: CGContext) {
@@ -22,6 +30,8 @@ class RecorderView: UIView, ViewRecorderDelegate {
     @objc var onImageStored: RCTDirectEventBlock?
     @objc var onRecorded: RCTDirectEventBlock?
     @objc var onSetupDone: RCTDirectEventBlock?
+    var isRecordingPaused: Bool = false
+    var videoURIs: [URL?] = []
     
     @objc var backgroundType: String = ""{
         didSet{
@@ -63,12 +73,84 @@ class RecorderView: UIView, ViewRecorderDelegate {
             viewRecorder.stopRecording()
         }
     }
+    
+    public func resetVariables() {
+        videoURIs = []
+        isRecordingPaused = false
+    }
+    
+    /** Merge all the videos that were recorded */
+    @objc func stopRecordingV2() {
+        if (videoURIs.count == 0) {
+            stopRecording()
+            resetVariables()
+            return
+        }
+        
+        if (viewRecorder != nil && !isRecordingPaused) {
+            viewRecorder.createScreenRecording() {
+                self.isRecordingPaused = true
+                self.stopRecordingV2()
+            }
+            return;
+        }
+        
+        if (videoURIs.count == 1 && self.onRecorded != nil) {
+            let uri = videoURIs[0]
+            if let uri = uri {
+                DispatchQueue.main.async {
+                    self.onRecorded!(["uri": String(describing: uri), "width": self.frame.width, "height": self.frame.height])
+                }
+            }
+            resetVariables()
+            return
+        }
 
-    @objc func pauseRecording(){
-        if(viewRecorder != nil){
-            viewRecorder.pauseRecording()
+        let composition = AVMutableComposition()
+        let nonOptionalURLs = videoURIs.compactMap { $0 }
+        composition.mergeVideo(nonOptionalURLs) { (url, error) in
+            if let url = url {
+                if self.onRecorded != nil {
+                    DispatchQueue.main.async {
+                        print("Final", url)
+                        self.onRecorded!(["uri": String(describing: url), "width": self.frame.width, "height": self.frame.height])
+                    }
+                }
+            } else {
+                print("Error: \(String(describing:  error))")
+            }
+        }
+        resetVariables()
+    }
+    
+    public func storeVideoURL(result:Dictionary<String, Any>){
+        let uri = result["uri"]
+        if let fileUri = uri {
+            let videoUrl = URL(string: String(describing: fileUri))
+            videoURIs.append(videoUrl)
+            print("Size", videoURIs.count)
         }
     }
+
+    @objc func pauseRecording(){
+        if(viewRecorder != nil) {
+            if (isRecordingPaused) {
+                viewRecorder = ViewRecorder(frame: frame)
+                viewRecorder.delegate = self
+                viewRecorder.setupRecorder()
+                
+                if onSetupDone != nil {
+                    DispatchQueue.main.async {
+                        self.onSetupDone!(["error":""])
+                    }
+                }
+                isRecordingPaused = false
+            } else {
+                viewRecorder.createScreenRecording()
+                isRecordingPaused = true
+            }
+        }
+   }
     
     public func onRecordedLocal(result:Dictionary<String, Any>){
         print("onRecordedLocal ",result)
