@@ -42,6 +42,23 @@ class RNViewRecorder: RCTViewManager {
         }
     }
   
+    @objc func pauseRecording(_ node: NSNumber){
+        DispatchQueue.main.async {                                // 2
+            let component = self.bridge.uiManager.view(             // 3
+                forReactTag: node                                     // 4
+                ) as! RecorderView                                       // 5
+            component.pauseRecording()                          // 6
+        }
+    }
+  
+    @objc func stopRecordingV2(_ node: NSNumber){
+        DispatchQueue.main.async {                                // 2
+            let component = self.bridge.uiManager.view(             // 3
+                forReactTag: node                                     // 4
+                ) as! RecorderView                                       // 5
+            component.stopRecordingV2()                          // 6
+        }
+    }
     
    
     

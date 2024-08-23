@@ -13,6 +13,7 @@ import Foundation
 
 @objc public protocol ViewRecorderDelegate: NSObjectProtocol  {
     func onRecordedLocal(_ view: ViewRecorder, result:Dictionary<String, Any>)
+    func storeVideoURL(_ view: ViewRecorder, result: Dictionary<String, Any>, completion: @escaping () -> Void)
     func getImage(_ view: ViewRecorder, context:CGContext)
 }
 
@@ -231,6 +232,38 @@ public class ViewRecorder:NSObject, AVCaptureAudioDataOutputSampleBufferDelegate
 
 
 
+    }
+
+    func createScreenRecording(completion: (() -> Void)? = nil){
+        if let list = assetWriter?.inputs {
+            for i in 0 ..< list.count {
+                do{
+                    try ObjC.catchException{
+                        self.assetWriter?.inputs[i].markAsFinished()
+                    }
+                }
+                catch{}
+            }
+
+            do{
+                try ObjC.catchException{
+                    self.assetWriter?.finishWriting(completionHandler: {
+                        self.delegate?.storeVideoURL(self, result: ["uri":(self.assetWriter?.outputURL.absoluteString)!]) {
+                            completion?()
+                        }
+                        self.isRecording = false
+                    })
+                    self.captureSession?.stopRunning();
+                }
+            }
+            catch{
+                self.delegate?.storeVideoURL(self, result: ["uri":(self.assetWriter?.outputURL.absoluteString)!]) {
+                    completion?()
+                }
+                self.isRecording = false
+                captureSession?.stopRunning();
+            }
+        }
     }
 
 
