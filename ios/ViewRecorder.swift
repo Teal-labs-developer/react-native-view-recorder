@@ -176,7 +176,7 @@ public class ViewRecorder:NSObject, AVCaptureAudioDataOutputSampleBufferDelegate
 
     private func startWritingSession(){
         assetWriter?.startWriting()
-        let startingTimeDelay = CMTimeMakeWithSeconds(0, preferredTimescale: 1000)
+        let startingTimeDelay = CMTimeMakeWithSeconds(1, preferredTimescale: 1000)
 
         assetWriter?.startSession(atSourceTime: CMTimeAdd(CMTimeMakeWithSeconds(CACurrentMediaTime(), preferredTimescale: 1000), startingTimeDelay))
         captureSession?.startRunning()
@@ -226,7 +226,12 @@ public class ViewRecorder:NSObject, AVCaptureAudioDataOutputSampleBufferDelegate
                 self.isRecording = false
                 captureSession?.stopRunning();
             }
+            
         }
+
+
+
+
     }
 
     func createScreenRecording(completion: (() -> Void)? = nil){

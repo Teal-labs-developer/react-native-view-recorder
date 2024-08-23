@@ -148,7 +148,7 @@ class RecorderView: UIView, ViewRecorderDelegate {
                 isRecordingPaused = true
             }
         }
-   }
+    }
     
     public func onRecordedLocal(result:Dictionary<String, Any>){
         print("onRecordedLocal ",result)
@@ -568,7 +568,7 @@ extension AVMutableComposition {
         videoComposition.frameDuration = CMTimeMake(value: 1, timescale: 30)
         videoComposition.renderSize = renderSize
         
-        guard let exporter = AVAssetExportSession(asset: self, presetName: AVAssetExportPreset1280x720) else {
+        guard let exporter = AVAssetExportSession(asset: self, presetName: AVAssetExportPresetPassthrough) else {
             completion(nil, nil)
             return
         }
